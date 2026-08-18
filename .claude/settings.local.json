@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm create vite@latest . -- --template react-ts)",
+      "PowerShell(npm create vite@latest movesafe-ai -- --template react-ts)",
+      "PowerShell(foreach \\($d in 'components','pages','layouts','services','types','data','assets','styles'\\) { New-Item -ItemType Directory -Force \"src\\\\$d\" | Out-Null }; Get-ChildItem src -Recurse -Force | ForEach-Object { $_.FullName.Replace\\(\"$PWD\\\\\", ''\\) })",
+      "PowerShell(Get-ChildItem public | ForEach-Object { $_.Name })",
+      "PowerShell(npx tsc -b)",
+      "PowerShell(Remove-Item -Force -Confirm:$false src\\\\index.css)",
+      "PowerShell(npm run lint)",
+      "PowerShell($f = \"C:\\\\Users\\\\mrdid\\\\.claude\\\\projects\\\\C--Users-mrdid-OneDrive-Documents-Claude-WorkSpace-Passion-Project\\\\a97a3be7-8e13-4be3-99f9-9293eea47470.jsonl\"; $reader = [System.IO.File]::OpenText\\($f\\); $n = 0; $line = $null; while \\($null -ne \\($l = $reader.ReadLine\\(\\)\\)\\) { $n++; if \\($n -eq 962\\) { $line = $l; break } }; $reader.Close\\(\\); $m = [regex]::Match\\($line, '\"media_type\":\"image/webp\",\"data\":\"\\([A-Za-z0-9+/=]+\\)\"'\\); if \\(-not $m.Success\\) { $m = [regex]::Match\\($line, '\"data\":\"\\([A-Za-z0-9+/=]{1000,}\\)\"'\\) }; if \\($m.Success\\) { $bytes = [Convert]::FromBase64String\\($m.Groups[1].Value\\); [System.IO.File]::WriteAllBytes\\(\"C:\\\\Users\\\\mrdid\\\\OneDrive\\\\Documents\\\\Claude WorkSpace\\\\Passion Project\\\\src\\\\assets\\\\hero-athlete.webp\", $bytes\\); Write-Output \"written $\\($bytes.Length\\) bytes\" } else { Write-Output \"no match\" })",
+      "PowerShell(npm install @supabase/supabase-js)"
+    ]
+  }
+}

@@ -1,0 +1,794 @@
+/* ===== Report detail page ===== */
+.report-page {
+  padding-block: 40px 72px;
+}
+
+.report-container {
+  max-width: 900px;
+}
+
+/* ===== Header ===== */
+.report-header {
+  margin-bottom: 28px;
+}
+
+.report-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background-color: rgba(251, 191, 36, 0.14);
+  border: 1px solid rgba(251, 191, 36, 0.38);
+  color: var(--color-warning);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.report-title {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  margin-bottom: 8px;
+}
+
+.report-meta {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+}
+
+.report-status-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background-color: rgba(52, 211, 153, 0.14);
+  color: var(--color-success);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.report-summary {
+  max-width: 70ch;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 16px 20px;
+}
+
+/* ===== Shared section rhythm ===== */
+.score-section,
+.metrics-section,
+.observations-section,
+.recommendations-section,
+.report-notes-section,
+.report-details {
+  margin-bottom: 32px;
+}
+
+.score-section h2,
+.metrics-section h2,
+.observations-section h2,
+.recommendations-section h2,
+.report-notes-section h2,
+.report-details h2 {
+  font-size: 1.25rem;
+  margin-bottom: 14px;
+}
+
+/* ===== Signed-out gate: overall score visible, details locked ===== */
+.report-locked {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.report-locked-title {
+  font-size: 1.25rem;
+  margin-bottom: var(--space-3);
+}
+
+.report-locked-text {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.report-locked-list {
+  display: inline-block;
+  text-align: left;
+  margin: 0 0 var(--space-5);
+  padding-left: 22px;
+  color: var(--color-text);
+}
+
+.report-locked-list li {
+  margin-bottom: var(--space-2);
+}
+
+.report-locked .report-actions {
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+.report-locked-note {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* User-written note: shown verbatim, line breaks preserved. */
+.report-note-text {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 14px 18px;
+  margin-bottom: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+/* ===== Overall score ===== */
+.score-content {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 24px;
+}
+
+.score-circle {
+  --score-angle: 0deg;
+  --score-color: var(--color-primary);
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(var(--score-color) var(--score-angle), var(--color-border) 0);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.score-band-strong {
+  --score-color: var(--color-success);
+}
+
+.score-band-developing {
+  --score-color: var(--color-primary);
+}
+
+.score-band-attention {
+  --score-color: var(--color-warning);
+}
+
+.score-circle-inner {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  background-color: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.1;
+}
+
+.score-out-of {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.score-label {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.score-label-strong {
+  color: var(--color-success);
+}
+
+.score-label-developing {
+  color: var(--color-primary);
+}
+
+.score-label-attention {
+  color: var(--color-warning);
+}
+
+.score-explainer {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  max-width: 48ch;
+}
+
+/* ===== Metrics ===== */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.metric-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 18px 20px;
+}
+
+.metric-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.metric-label {
+  font-size: 1rem;
+}
+
+.metric-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.metric-status {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.metric-status-good {
+  background-color: rgba(52, 211, 153, 0.14);
+  color: var(--color-success);
+}
+
+.metric-status-attention {
+  background-color: rgba(251, 191, 36, 0.14);
+  color: var(--color-warning);
+}
+
+.metric-status-warning {
+  background-color: rgba(248, 113, 113, 0.14);
+  color: var(--color-danger);
+}
+
+.metric-progress {
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.metric-progress-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+.metric-progress-good {
+  background-color: var(--color-success);
+}
+
+.metric-progress-attention {
+  background-color: var(--color-warning);
+}
+
+.metric-progress-warning {
+  background-color: var(--color-danger);
+}
+
+.metric-description {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ===== Observations ===== */
+.observations-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.observations-list li {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  color: var(--color-text);
+}
+
+.observations-list li::before {
+  content: '•';
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ===== Recommendations ===== */
+.recommendations-list {
+  margin: 0 0 12px;
+  padding-left: 0;
+  list-style: none;
+  counter-reset: recommendation;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendations-list li {
+  counter-increment: recommendation;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  color: var(--color-text);
+}
+
+.recommendations-list li::before {
+  content: counter(recommendation);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(77, 141, 255, 0.12);
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ===== Analysis details ===== */
+.report-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 0;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 18px 20px;
+}
+
+.report-details-grid dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+}
+
+.report-details-grid dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+/* ===== Guest callout ===== */
+.guest-report-callout {
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background-color: rgba(77, 141, 255, 0.08);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ===== Actions ===== */
+.report-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.report-primary-button {
+  padding: 11px 22px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.report-primary-button:hover {
+  background-color: var(--color-primary-dark);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.report-secondary-button {
+  padding: 11px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.report-secondary-button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.report-primary-button:focus-visible,
+.report-secondary-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ===== Disclaimer + shared muted text ===== */
+.report-disclaimer {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+}
+
+.report-muted {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* ===== PDF export ===== */
+.report-pdf-header {
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.report-pdf-brand {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.report-pdf-subtitle {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* PDF-friendly score block: hidden on screen, swapped in for the
+   conic-gradient circle only while exporting. */
+.report-pdf-score {
+  display: none;
+}
+
+.report-pdf-score-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.report-pdf-score-bar {
+  width: 240px;
+  max-width: 100%;
+  height: 12px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background-color: #eef1f6;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.report-pdf-score-fill {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+}
+
+/* Temporary export state applied by the PDF service during capture. */
+/*
+ * PDF export renders onto a white canvas, so the dark-theme tokens are
+ * flipped back to their light values for the exported subtree. Custom
+ * properties inherit, so redefining them here re-themes every descendant
+ * without touching a single component rule.
+ */
+.pdf-exporting {
+  background-color: #ffffff;
+
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-sunken: #f6f8fb;
+  --color-text: #172033;
+  --color-text-muted: #5b6577;
+  --color-border: #dfe4ec;
+  --color-border-strong: #c7cfdd;
+  --color-primary: #1f6feb;
+  --color-primary-dark: #174ea6;
+  --color-success: #16835a;
+  --color-warning: #96590a;
+  --color-danger: #c43b3b;
+  --edge-highlight: transparent;
+  --shadow-soft: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --gradient-surface: none;
+}
+
+.pdf-exporting .report-pdf-score {
+  display: block;
+}
+
+.pdf-exporting .score-circle {
+  display: none;
+}
+
+.pdf-exporting .pdf-exclude {
+  display: none;
+}
+
+.pdf-exporting .score-content,
+.pdf-exporting .metric-card,
+.pdf-exporting .report-empty-state {
+  box-shadow: none;
+}
+
+.pdf-exporting * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Export feedback messages */
+.report-pdf-feedback {
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.report-pdf-feedback-success {
+  background-color: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: var(--color-success);
+}
+
+.report-pdf-feedback-error {
+  background-color: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: var(--color-danger);
+}
+
+/* ===== Browser print support ===== */
+
+/* Print-only footer inside the printable content */
+.report-print-footer {
+  display: none;
+}
+
+@page {
+  size: A4;
+  margin: 14mm;
+}
+
+@media print {
+  /* Printing happens on white paper, so the dark-theme tokens are flipped
+     back to light for the whole document (see the .pdf-exporting note). */
+  :root {
+    --color-background: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-raised: #ffffff;
+    --color-surface-sunken: #f6f8fb;
+    --color-text: #172033;
+    --color-text-muted: #5b6577;
+    --color-border: #dfe4ec;
+    --color-border-strong: #c7cfdd;
+    --color-primary: #1f6feb;
+    --color-primary-dark: #174ea6;
+    --color-success: #16835a;
+    --color-warning: #96590a;
+    --color-danger: #c43b3b;
+    --edge-highlight: transparent;
+    --shadow-soft: none;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+    --gradient-surface: none;
+  }
+
+  /* Hide application chrome and interactive controls */
+  .header,
+  .site-footer,
+  .print-exclude,
+  .pdf-exclude {
+    display: none !important;
+  }
+
+  /* Clean white page, dark text */
+  html,
+  body {
+    background: #ffffff;
+  }
+
+  /* The ambient background glow must never reach paper */
+  body::before {
+    display: none !important;
+  }
+
+  /* Use the full printable width */
+  .report-page {
+    padding-block: 0;
+  }
+
+  .report-page,
+  .report-container,
+  .report-print-content,
+  .layout-container {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding-inline: 0;
+  }
+
+  /* Remove screen-only decoration but keep light structure */
+  .report-summary,
+  .score-content,
+  .metric-card,
+  .observations-list li,
+  .recommendations-list li,
+  .report-details-grid {
+    box-shadow: none;
+  }
+
+  .metric-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Score: swap the conic-gradient circle for the text + bar block */
+  .score-circle {
+    display: none;
+  }
+
+  .report-pdf-score {
+    display: block;
+  }
+
+  /* Keep bar and badge colors where the browser allows it — every value
+     also appears as text, so grayscale output stays understandable. */
+  .metric-progress,
+  .metric-progress-bar,
+  .report-pdf-score-bar,
+  .report-pdf-score-fill,
+  .metric-status,
+  .report-badge,
+  .report-status-chip {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Visible track outline even without background colors */
+  .metric-progress,
+  .report-pdf-score-bar {
+    border: 1px solid #9aa4b2;
+  }
+
+  /* Page-break behavior */
+  .score-content,
+  .metric-card,
+  .observations-list li,
+  .recommendations-list li,
+  .report-details-grid,
+  .report-disclaimer,
+  .report-notes-section,
+  .report-pdf-header {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report-print-content h2 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Print-only footer */
+  .report-print-footer {
+    display: block;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #dfe4ec;
+    font-size: 0.78rem;
+    color: #667085;
+  }
+}
+
+/* ===== Empty / denied states ===== */
+.report-empty-state,
+.report-access-denied {
+  max-width: 560px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 36px 32px;
+}
+
+.report-empty-state h1,
+.report-access-denied h1 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.report-empty-state p,
+.report-access-denied p {
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 760px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .score-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .score-explainer {
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .report-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-actions {
+    flex-direction: column;
+  }
+
+  .report-primary-button,
+  .report-secondary-button {
+    text-align: center;
+  }
+}

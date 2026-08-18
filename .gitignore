@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Supabase local CLI state and Edge Function secrets.
+# Note: supabase/functions source code itself IS version-controlled.
+supabase/.branches
+supabase/.temp
+supabase/functions/.env
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

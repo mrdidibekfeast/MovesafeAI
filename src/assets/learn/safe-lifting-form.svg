@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="slbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9eef7"/><stop offset="1" stop-color="#cbd6e6"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="300" fill="url(#slbg)"/>
+  <ellipse cx="258" cy="286" rx="125" ry="13" fill="#b4c0d3" opacity="0.55"/>
+  <path d="M248 182 L258 228 L262 278" stroke="#2a3f5e" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M247 184 L300 150" stroke="#1f6feb" stroke-width="30" stroke-linecap="round" fill="none"/>
+  <path d="M300 152 L290 236" stroke="#e0a983" stroke-width="15" stroke-linecap="round" fill="none"/>
+  <path d="M302 146 L320 148" stroke="#e0a983" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <circle cx="331" cy="150" r="18" fill="#e8b490"/>
+  <path d="M315 146 Q317 130 335 132 Q347 134 345 148 Q339 138 329 139 Q321 139 315 146 Z" fill="#2e2820"/>
+  <rect x="272" y="234" width="34" height="26" rx="4" fill="#a9713f"/>
+  <rect x="272" y="234" width="34" height="8" rx="3" fill="#c08a54"/>
+</svg>

@@ -1,0 +1,301 @@
+/* Shared styles for the authentication pages:
+   Login, Signup, Forgot Password, and Reset Password. */
+
+/* ===== Page shell ===== */
+.login-page,
+.signup-page,
+.password-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 56px 20px 72px;
+}
+
+.login-container,
+.signup-container,
+.password-container {
+  width: 100%;
+  max-width: 440px;
+}
+
+.login-panel,
+.signup-panel,
+.password-panel {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  padding: 36px 32px;
+}
+
+.login-brand,
+.signup-brand,
+.password-brand {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 20px;
+}
+
+.login-heading,
+.signup-heading,
+.password-heading {
+  font-size: 1.6rem;
+  margin-bottom: 8px;
+}
+
+.login-description,
+.signup-description,
+.password-description {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+.login-form,
+.signup-form,
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ===== Fields ===== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.form-input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background-color: var(--color-surface);
+  font-size: 0.95rem;
+  color: var(--color-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: #6b7894;
+}
+
+.form-input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.28);
+}
+
+.form-input.has-error {
+  border-color: var(--color-danger);
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  padding-right: 68px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.password-toggle:hover {
+  background-color: var(--color-background);
+}
+
+.password-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+/* ===== Error messages =====
+   Field-level errors sit under their input; the general form error sits
+   above the form. Both pair a colour change with text, never colour alone. */
+.field-error {
+  font-size: 0.82rem;
+  color: var(--color-danger);
+}
+
+.form-error {
+  margin-bottom: 18px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background-color: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+/* ===== Live password requirement checklist (Signup + Reset) ===== */
+.password-requirements {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 14px;
+}
+
+.password-requirement {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.password-requirement::before {
+  content: '○';
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.password-requirement.met {
+  color: var(--color-success);
+}
+
+.password-requirement.met::before {
+  content: '✓';
+  color: var(--color-success);
+}
+
+/* ===== Primary submit button ===== */
+.login-button,
+.signup-button,
+.password-button {
+  padding: 12px 20px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.login-button:hover:not(:disabled),
+.signup-button:hover:not(:disabled),
+.password-button:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.login-button:focus-visible,
+.signup-button:focus-visible,
+.password-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.login-button:disabled,
+.signup-button:disabled,
+.password-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ===== Footer links and disclaimer ===== */
+.login-footer,
+.signup-footer,
+.password-links {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--color-text-muted);
+}
+
+.auth-disclaimer {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ===== Success states (email sent / password updated) ===== */
+.signup-success,
+.password-success {
+  text-align: center;
+}
+
+.signup-success-icon,
+.password-success-icon {
+  font-size: 2.6rem;
+  margin-bottom: 12px;
+}
+
+.signup-success-email,
+.password-success-email {
+  display: inline-block;
+  margin: 4px 0 20px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  font-weight: 600;
+  color: var(--color-text);
+  word-break: break-all;
+}
+
+.signup-success .signup-button,
+.password-success .password-button {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.signup-back-button,
+.password-text-button {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: transparent;
+}
+
+.signup-back-button:hover,
+.password-text-button:hover {
+  text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 520px) {
+  .password-requirements {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-page,
+  .signup-page,
+  .password-page {
+    padding: 32px 16px 48px;
+  }
+
+  .login-panel,
+  .signup-panel,
+  .password-panel {
+    padding: 28px 20px;
+  }
+}

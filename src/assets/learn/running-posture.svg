@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="rpbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9eef7"/><stop offset="1" stop-color="#cbd6e6"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="300" fill="url(#rpbg)"/>
+  <ellipse cx="245" cy="284" rx="135" ry="13" fill="#b4c0d3" opacity="0.5"/>
+  <path d="M238 180 L214 232 L196 268" stroke="#2a3f5e" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M238 180 L280 192 L300 234" stroke="#324a6d" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M240 182 L250 122" stroke="#1f6feb" stroke-width="28" stroke-linecap="round" fill="none"/>
+  <path d="M248 132 L272 152" stroke="#e0a983" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <path d="M250 134 L226 158" stroke="#e0a983" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <path d="M250 112 L258 100" stroke="#e0a983" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <circle cx="262" cy="94" r="18" fill="#e8b490"/>
+  <path d="M246 90 Q248 73 266 75 Q279 77 278 92 Q271 82 261 83 Q252 83 246 90 Z" fill="#3a2c24"/>
+</svg>

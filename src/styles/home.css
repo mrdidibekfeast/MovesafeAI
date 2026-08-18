@@ -1,0 +1,474 @@
+/* ===== Shared section building blocks ===== */
+.home-section {
+  padding-block: 56px;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+
+.home-section-title {
+  font-size: clamp(1.5rem, 2.5vw, 1.75rem);
+  margin-bottom: 12px;
+}
+
+.home-section-description {
+  color: var(--color-text-muted);
+  max-width: 60ch;
+}
+
+/* ===== Shared card styles (About + Feature cards) ===== */
+.about-card,
+.feature-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-image: var(--gradient-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 26px;
+  overflow: hidden;
+}
+
+/* A lit top edge is what separates a raised surface from a flat rectangle
+   on a dark theme — this reads as light catching the card's lip. */
+.about-card::before,
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--edge-highlight) 22%,
+    rgba(124, 171, 255, 0.32) 50%,
+    var(--edge-highlight) 78%,
+    transparent
+  );
+}
+
+.about-card-icon,
+.feature-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background-color: var(--tint-primary);
+  border: 1px solid rgba(77, 141, 255, 0.22);
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+
+.about-card-title,
+.feature-card-title {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+.about-card-description,
+.feature-card-description {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.about-grid,
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 36px;
+}
+
+/* ===== Shared pill button base (Hero + CTA) ===== */
+.hero-primary-button,
+.hero-secondary-button,
+.cta-primary-button,
+.cta-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-weight: 600;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.hero-primary-button:hover,
+.hero-secondary-button:hover,
+.cta-primary-button:hover,
+.cta-secondary-button:hover {
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* ===== Hero ===== */
+.hero {
+  position: relative;
+  padding-block: 88px 96px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/*
+ * Faint technical grid, masked to fade out toward the edges. It gives the
+ * dark canvas structure without ever competing with the text on top.
+ */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image:
+    linear-gradient(to right, rgba(148, 176, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 176, 255, 0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, #000 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, #000 30%, transparent 78%);
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
+  align-items: center;
+  gap: 56px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 16px 7px 12px;
+  border-radius: 999px;
+  background-color: var(--tint-primary);
+  border: 1px solid rgba(77, 141, 255, 0.28);
+  color: #a9c8ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 24px;
+  backdrop-filter: blur(6px);
+}
+
+/* Small status dot — signals "live product" without any motion */
+.hero-badge::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.18);
+  flex-shrink: 0;
+}
+
+.hero-title {
+  font-size: clamp(2.2rem, 4.6vw, 3.5rem);
+  line-height: 1.06;
+  margin-bottom: 20px;
+}
+
+/* Gradient runs across the second clause only, so the first line stays
+   maximally readable and the accent reads as deliberate emphasis. */
+.hero-title-accent {
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-description {
+  color: var(--color-text-muted);
+  font-size: 1.08rem;
+  line-height: 1.7;
+  max-width: 54ch;
+  margin-bottom: 34px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.hero-primary-button {
+  background-image: linear-gradient(135deg, #5b96ff, #2f6fe0);
+  color: #ffffff;
+  box-shadow:
+    0 6px 20px rgba(47, 111, 224, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.hero-primary-button:hover,
+.hero-primary-button:focus-visible {
+  color: #ffffff;
+  box-shadow:
+    0 10px 30px var(--glow-primary),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.hero-secondary-button {
+  background-color: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  backdrop-filter: blur(6px);
+}
+
+.hero-secondary-button:hover,
+.hero-secondary-button:focus-visible {
+  border-color: var(--color-primary);
+  color: #ffffff;
+  background-color: var(--tint-primary);
+}
+
+/* Trust strip under the buttons */
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+  margin-top: 34px;
+  padding: 26px 0 0;
+  border-top: 1px solid var(--color-border);
+  list-style: none;
+}
+
+.hero-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+}
+
+.hero-meta-item::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+/* --- Hero image: lit from behind so it sits in the page, not on it --- */
+.hero-image {
+  position: relative;
+}
+
+.hero-image::before {
+  content: '';
+  position: absolute;
+  inset: -14% -8% -18%;
+  z-index: -1;
+  background:
+    radial-gradient(closest-side, var(--glow-primary), transparent 72%),
+    radial-gradient(closest-side at 70% 60%, var(--glow-accent), transparent 70%);
+  filter: blur(26px);
+}
+
+.hero-image-photo {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  max-height: 460px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--edge-highlight);
+  box-shadow:
+    var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ===== About section ===== */
+.about-content {
+  max-width: 720px;
+}
+
+.about-content .home-section-description {
+  margin-bottom: 12px;
+}
+
+/* ===== Feature Navigation section ===== */
+.feature-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(77, 141, 255, 0.12);
+}
+
+.feature-card-description {
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+.feature-card-button {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.feature-card-button:hover,
+.feature-card-button:focus-visible {
+  background-color: var(--color-primary);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ===== Call-to-Action section ===== */
+.cta-section {
+  padding-block: 64px;
+}
+
+.cta-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(120% 140% at 50% -20%, rgba(34, 211, 238, 0.22), transparent 58%),
+    linear-gradient(135deg, #2b6ae0 0%, #1c4fbe 55%, #163d96 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 60px rgba(47, 111, 224, 0.2);
+  padding: 72px 32px;
+  overflow: hidden;
+}
+
+/* Same lit-lip treatment as the cards, at higher intensity */
+.cta-container::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent
+  );
+}
+
+.cta-label {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.cta-title {
+  color: #ffffff;
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  max-width: 24ch;
+  margin-bottom: 16px;
+}
+
+.cta-description {
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 62ch;
+  margin-bottom: 28px;
+}
+
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* On the white pill, text must be the DEEP blue — --color-primary-dark is
+   the light hover shade in this theme and would fail contrast here. */
+.cta-primary-button {
+  background-color: #ffffff;
+  color: var(--color-primary-deep);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+}
+
+.cta-primary-button:hover,
+.cta-primary-button:focus-visible {
+  background-color: #eaf1ff;
+  color: var(--color-primary-deep);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+}
+
+.cta-secondary-button {
+  border: 1.5px solid rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+}
+
+.cta-secondary-button:hover,
+.cta-secondary-button:focus-visible {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+/* Keep keyboard focus rings visible on the blue background */
+.cta-container :focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .about-grid,
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .home-section {
+    padding-block: 40px;
+  }
+
+  .hero {
+    padding-block: 48px;
+  }
+
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .hero-image-photo {
+    min-height: 0;
+    max-height: 320px;
+  }
+}
+
+@media (max-width: 640px) {
+  .about-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-container {
+    padding: 40px 20px;
+  }
+
+  .cta-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 320px;
+  }
+}

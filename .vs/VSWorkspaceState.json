@@ -1,0 +1,14 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src\\assets",
+    "\\src\\components",
+    "\\src\\data",
+    "\\src\\layouts",
+    "\\src\\pages",
+    "\\src\\services",
+    "\\src\\styles"
+  ],
+  "SelectedNode": "\\.env.example",
+  "PreviewInSolutionExplorer": false
+}

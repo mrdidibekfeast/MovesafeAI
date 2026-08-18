@@ -1,0 +1,85 @@
+/* App shell: header on top, footer pushed to the bottom on short pages */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.layout-container {
+  width: 100%;
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding-inline: 24px;
+}
+
+.site-main {
+  flex: 1 0 auto;
+}
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding-block: 24px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.footer-disclaimer {
+  max-width: 68ch;
+}
+
+.footer-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-nav a {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.footer-nav a:hover,
+.footer-nav a:focus-visible {
+  color: var(--color-primary);
+}
+
+/* Shared page building blocks */
+.page-section {
+  padding-block: 48px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+}
+
+.page-subtitle {
+  margin-top: 8px;
+  color: var(--color-text-muted);
+  max-width: 60ch;
+}
+
+@media (max-width: 640px) {
+  .layout-container {
+    padding-inline: 16px;
+  }
+
+  .page-section {
+    padding-block: 32px;
+  }
+
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
+}

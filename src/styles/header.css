@@ -1,0 +1,306 @@
+/*
+ * Sticky glass bar. A solid fill would cut a hard band across the ambient
+ * background glow, so the header is translucent and blurs what scrolls
+ * beneath it. The fallback below keeps it opaque where blur is unsupported.
+ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: rgba(10, 14, 24, 0.72);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .header {
+    background-color: #0b1120;
+  }
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-block: 12px;
+}
+
+/* Brand */
+.header-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.header-brand:hover,
+.header-brand:focus-visible {
+  text-decoration: none;
+}
+
+.header-brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.header-brand-tagline {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Main navigation */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.header-link {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header-link:hover,
+.header-link:focus-visible {
+  color: var(--color-primary-dark);
+  background-color: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+}
+
+.header-link.active {
+  color: var(--color-primary);
+  background-color: var(--tint-primary);
+  font-weight: 600;
+}
+
+/* Right-side actions */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Login: plain link */
+.header-login-link {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.header-login-link:hover,
+.header-login-link:focus-visible {
+  color: var(--color-primary-dark);
+  background-color: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+}
+
+.header-login-link.active {
+  color: var(--color-primary);
+  background-color: var(--tint-primary);
+  font-weight: 600;
+}
+
+/* Sign Up: secondary (outlined) button */
+.header-signup-link {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.header-signup-link:hover,
+.header-signup-link:focus-visible {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  background-color: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+}
+
+.header-signup-link.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Authenticated user indicator */
+.header-user {
+  display: flex;
+  align-items: center;
+}
+
+.header-user-name {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* Sign Out: subtle button that turns to a warning on hover */
+.header-signout-button {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: transparent;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.header-signout-button:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+  background-color: rgba(248, 113, 113, 0.12);
+}
+
+.header-signout-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.header-signout-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Transient sign-out error — floats below the bar so it never shifts layout */
+.header-auth-error {
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  box-shadow: var(--shadow-soft);
+  max-width: 260px;
+  z-index: 20;
+}
+
+/* Loading skeleton */
+.header-loading {
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.header-start-button {
+  padding: 9px 18px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-image: linear-gradient(135deg, #5b96ff, #2f6fe0);
+  box-shadow:
+    0 4px 14px rgba(47, 111, 224, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  white-space: nowrap;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.header-start-button:hover,
+.header-start-button:focus-visible {
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 22px var(--glow-primary),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  text-decoration: none;
+}
+
+/* Menu button (hidden on desktop) */
+.header-menu-button {
+  display: none;
+  margin-left: auto;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--color-text);
+  transition: background-color 0.2s ease;
+}
+
+.header-menu-button:hover {
+  background-color: var(--color-background);
+}
+
+/* Mobile navigation */
+@media (max-width: 1100px) {
+  .header-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .header-nav,
+  .header-actions {
+    display: none;
+  }
+
+  .menu-open .header-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 4px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .menu-open .header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    padding-bottom: 8px;
+  }
+
+  .menu-open .header-link,
+  .menu-open .header-login-link {
+    padding: 12px;
+  }
+
+  .menu-open .header-signup-link,
+  .menu-open .header-start-button,
+  .menu-open .header-signout-button {
+    padding: 12px 18px;
+    text-align: center;
+  }
+
+  .menu-open .header-user {
+    display: flex;
+    padding: 8px 12px;
+  }
+}
+
+/* On crowded desktop widths, drop the greeting before hiding nav links. */
+@media (max-width: 1240px) {
+  .header-user {
+    display: none;
+  }
+}

@@ -1,0 +1,67 @@
+/* ===== Application error boundary fallback ===== */
+/* Self-contained: must render safely even when the rest of the app failed. */
+
+.app-error-page {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background-color: var(--color-background);
+}
+
+.app-error-panel {
+  max-width: 480px;
+  width: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.app-error-title {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-3);
+}
+
+.app-error-message {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.app-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.app-error-button {
+  padding: 10px 22px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.app-error-button:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.app-error-home-link {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-weight: 600;
+  background-color: var(--color-surface);
+}
+
+.app-error-home-link:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  text-decoration: none;
+}

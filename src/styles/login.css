@@ -1,0 +1,30 @@
+/* Login-specific styles. The shared panel, form, button, and error styles
+   live in auth-forms.css. */
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.remember-me input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+.forgot-password-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+}

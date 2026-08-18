@@ -1,0 +1,506 @@
+/* ===== Learn page sections ===== */
+.learn-section {
+  padding-block: 56px;
+}
+
+.learn-section-label {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+}
+
+.learn-section-title {
+  font-size: clamp(1.5rem, 2.5vw, 1.75rem);
+  margin-bottom: 12px;
+}
+
+.learn-section-description {
+  color: var(--color-text-muted);
+  max-width: 60ch;
+}
+
+/* ===== Learn hero ===== */
+.learn-hero {
+  padding-block: 64px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.learn-hero-title {
+  font-size: clamp(2rem, 3.5vw, 2.6rem);
+  letter-spacing: -0.5px;
+  margin-bottom: 12px;
+}
+
+.learn-hero-description {
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+  max-width: 62ch;
+}
+
+/* ===== Shared card grids ===== */
+.learn-card-grid,
+.prevention-grid,
+.injury-grid,
+.nutrition-grid,
+.warmup-grid,
+.video-grid {
+  display: grid;
+  gap: 24px;
+  margin-top: 36px;
+}
+
+/* Three cards per row */
+.learn-card-grid,
+.injury-grid,
+.nutrition-grid,
+.video-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Two cards per row */
+.prevention-grid,
+.warmup-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* ===== Shared card container ===== */
+.learn-card,
+.prevention-card,
+.injury-card,
+.nutrition-card,
+.warmup-card,
+.video-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.learn-card:hover,
+.prevention-card:hover,
+.injury-card:hover,
+.nutrition-card:hover,
+.warmup-card:hover,
+.video-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Shared card media (16:9) ===== */
+.learn-card-image,
+.prevention-image,
+.injury-image,
+.nutrition-image,
+.warmup-image,
+.video-thumbnail {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* ===== Shared card body ===== */
+.learn-card-body,
+.prevention-content,
+.injury-body,
+.nutrition-content,
+.warmup-content,
+.video-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 24px;
+}
+
+/* ===== Shared card titles ===== */
+.learn-card-title,
+.prevention-title,
+.injury-title,
+.nutrition-title,
+.warmup-title,
+.video-title {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+}
+
+/* Titles immediately followed by a badge or source sit tighter */
+.injury-title,
+.video-title {
+  margin-bottom: 4px;
+}
+
+/* ===== Shared card descriptions ===== */
+.learn-card-description,
+.prevention-description,
+.injury-description,
+.nutrition-description,
+.warmup-purpose,
+.video-description {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Descriptions that must grow so the button pins to the card bottom */
+.learn-card-description,
+.video-description {
+  flex-grow: 1;
+  margin-bottom: 20px;
+}
+
+.prevention-description,
+.injury-description,
+.nutrition-description {
+  margin-bottom: 16px;
+}
+
+.warmup-purpose {
+  margin-bottom: 14px;
+}
+
+/* ===== Shared meta badges (body area / topic) ===== */
+.injury-area,
+.video-topic {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: rgba(77, 141, 255, 0.12);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* ===== Shared in-card sub-list titles ===== */
+.injury-list-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+
+/* ===== Shared in-card lists ===== */
+.prevention-list,
+.injury-list,
+.nutrition-tips,
+.warmup-steps {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.prevention-list li,
+.injury-list li,
+.nutrition-tips li,
+.warmup-steps li {
+  margin-bottom: 5px;
+}
+
+.prevention-list li:last-child,
+.injury-list li:last-child,
+.nutrition-tips li:last-child,
+.warmup-steps li:last-child {
+  margin-bottom: 0;
+}
+
+/* Ordered warm-up steps need room for their numbers */
+.warmup-steps li {
+  padding-left: 4px;
+}
+
+/* Lists that sit above another block need bottom spacing */
+.injury-list {
+  margin-bottom: 16px;
+}
+
+.injury-list:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== Movement Basics: outline "Read More" button ===== */
+.learn-card-button {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.learn-card-button:hover,
+.learn-card-button:focus-visible {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* ===== Warm-up: coaching cue callout ===== */
+.warmup-cue {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background-color: rgba(77, 141, 255, 0.10);
+  border-left: 3px solid var(--color-primary);
+  font-size: 0.9rem;
+  font-style: italic;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+.warmup-cue-label {
+  display: block;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 2px;
+}
+
+/* ===== Video: source line + solid "Watch Video" button ===== */
+.video-source {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.video-button {
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 9px 20px;
+  border-radius: 999px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.video-button:hover,
+.video-button:focus-visible {
+  background-color: var(--color-primary-dark);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ===== Posture Gallery: image + annotation cards (LearnImageCard) ===== */
+.learn-image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 36px;
+}
+
+.lic {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lic:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.lic-media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.lic-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lic-annotations {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.55));
+}
+
+.lic-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(8, 15, 30, 0.85) 0%,
+    rgba(8, 15, 30, 0.4) 42%,
+    rgba(8, 15, 30, 0) 72%
+  );
+}
+
+.lic-media-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 16px 18px;
+}
+
+.lic-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.lic-issue .lic-badge {
+  background-color: rgba(255, 93, 93, 0.92);
+  color: #ffffff;
+}
+
+.lic-good .lic-badge {
+  background-color: rgba(55, 214, 122, 0.95);
+  color: #05331d;
+}
+
+.lic-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.15rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+.lic-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.lic-description {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+}
+
+.lic-why {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin-bottom: 16px;
+}
+
+.lic-why-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 2px;
+}
+
+.lic-tip {
+  margin-top: auto;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background-color: rgba(52, 211, 153, 0.14);
+  border-left: 3px solid var(--color-success);
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+.lic-tip-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-success);
+  margin-bottom: 2px;
+}
+
+/* ===== Shared section-level info callouts ===== */
+.nutrition-note,
+.warmup-note,
+.learn-reminder {
+  margin-top: 28px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: rgba(77, 141, 255, 0.08);
+  border: 1px solid var(--color-border);
+}
+
+.nutrition-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.nutrition-note-icon {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.warmup-note-title,
+.learn-reminder-title {
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.warmup-note p,
+.learn-reminder p {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .learn-card-grid,
+  .injury-grid,
+  .nutrition-grid,
+  .video-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .learn-section {
+    padding-block: 40px;
+  }
+
+  .learn-hero {
+    padding-block: 48px;
+  }
+}
+
+@media (max-width: 640px) {
+  .learn-card-grid,
+  .prevention-grid,
+  .injury-grid,
+  .nutrition-grid,
+  .warmup-grid,
+  .video-grid,
+  .learn-image-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,318 @@
+:root {
+  color-scheme: dark;
+
+  /* Blue/cyan accent pair, tuned for a dark canvas. NOTE: on a dark theme a
+     hover must get BRIGHTER, so --color-primary-dark is deliberately the
+     lighter shade — the name is kept so every existing hover rule still
+     resolves correctly. */
+  --color-primary: #4d8dff;
+  --color-primary-dark: #7cabff;
+  --color-primary-deep: #1c5fd0;
+  --color-accent: #22d3ee;
+
+  /* Layered dark surfaces: the page is near-black navy, cards lift out of it */
+  --color-background: #070a14;
+  --color-surface: #111726;
+  --color-surface-raised: #171e30;
+  --color-surface-sunken: #0b101c;
+
+  --color-text: #e9eef9;
+  --color-text-muted: #9aa7c2;
+  --color-border: #232c42;
+  --color-border-strong: #33405e;
+
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+
+  /* Translucent accents for glows, tints, and glass edges */
+  --tint-primary: rgba(77, 141, 255, 0.12);
+  --tint-primary-strong: rgba(77, 141, 255, 0.2);
+  --glow-primary: rgba(77, 141, 255, 0.35);
+  --glow-accent: rgba(34, 211, 238, 0.28);
+  --edge-highlight: rgba(255, 255, 255, 0.07);
+
+  --gradient-accent: linear-gradient(135deg, #7cabff 0%, #4d8dff 45%, #22d3ee 100%);
+  --gradient-surface: linear-gradient(180deg, #151c2e 0%, #101623 100%);
+
+  /* Container widths */
+  --content-width: 1200px;
+  --content-readable: 760px; /* legal / long-form text pages */
+
+  /* Spacing scale (canonical values for new styles; existing files keep
+     their equivalent px values) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Radius + shadow scale (aliases of the established design values) */
+  --border-radius: 14px;
+  --radius-sm: 8px;
+  --radius-md: var(--border-radius);
+  --radius-lg: 20px;
+  /* Dark-theme shadows carry a 1px inset highlight on the top edge. That
+     lit lip is what makes a surface read as raised rather than as a flat
+     rectangle, and baking it into the token gives every existing card the
+     treatment without touching a single component rule. */
+  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-md: var(--shadow-soft);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --shadow-glow: 0 8px 30px var(--glow-primary);
+
+  --font-body: 'Segoe UI', system-ui, -apple-system, 'Inter', Roboto, sans-serif;
+}
+
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--color-text);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+ * Ambient light. Two large, very soft radial washes sit behind all content
+ * so the dark canvas has depth instead of reading as flat black. Fixed
+ * attachment keeps them from sliding around while scrolling.
+ */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 600px at 78% -8%, rgba(77, 141, 255, 0.16), transparent 62%),
+    radial-gradient(760px 520px at 8% 4%, rgba(34, 211, 238, 0.09), transparent 60%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+}
+
+/* Optical correction: large headings need tighter tracking to look right */
+h1 {
+  letter-spacing: -0.03em;
+}
+
+p {
+  line-height: 1.6;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--color-primary-dark);
+  text-decoration: underline;
+}
+
+/* Buttons */
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Images and media */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Form elements */
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+textarea,
+select,
+button {
+  border-radius: 0;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* Baseline dark styling for form controls. Page stylesheets may override,
+   but nothing should ever fall through to a white-on-white input. */
+input,
+textarea,
+select {
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #6b7894;
+}
+
+/* Native checkboxes/radios stay legible against dark surfaces */
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+::selection {
+  background-color: var(--tint-primary-strong);
+  color: #ffffff;
+}
+
+/*
+ * Card surfaces get a faint vertical gradient instead of a flat fill, so
+ * they catch light from above like the rest of the theme. Page stylesheets
+ * set background-COLOR on these, so setting background-IMAGE here layers on
+ * top without fighting the cascade.
+ */
+.dashboard-summary-card,
+.dashboard-chart-card,
+.dashboard-recent-card,
+.dashboard-quick-action,
+.dashboard-feedback-card,
+.dashboard-recommendation-card,
+.report-history-card,
+.metric-card,
+.score-content,
+.learn-card,
+.injury-card,
+.nutrition-card,
+.warmup-card,
+.video-card,
+.prevention-card,
+.page-state,
+.report-locked,
+.report-summary {
+  background-image: var(--gradient-surface);
+}
+
+/* Scrollbars that belong to the theme rather than the OS light default */
+* {
+  scrollbar-color: var(--color-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-border-strong);
+  border: 3px solid var(--color-background);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #47567a;
+}
+
+/* Accessible hidden text — visible to screen readers, removed visually.
+   Never use display:none for content assistive technology needs. */
+.sr-only,
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until keyboard focus, then clearly visible on top. */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: 16px;
+  z-index: 200;
+  padding: 10px 18px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  top: 0;
+  color: #ffffff;
+  text-decoration: none;
+  outline: 3px solid var(--color-primary-dark);
+  outline-offset: 2px;
+}
+
+/* The main region receives programmatic focus after route changes; a
+   page-wide focus ring there is noise, not information. */
+#main-content:focus,
+#main-content:focus-visible {
+  outline: none;
+}
+
+/* Respect reduced-motion preferences globally. Loading indicators remain
+   visible — every spinner in the app is paired with descriptive text. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
