@@ -41,6 +41,11 @@ import {
  *   npx supabase secrets set ALLOWED_ORIGINS=https://movesafe.example.com
  */
 const DEFAULT_ALLOWED_ORIGINS = [
+  // Production origin is hard-coded so deploying the allow-list can never
+  // lock the live site out of its own function by way of a missing secret.
+  "https://movesafeai.app",
+  "https://www.movesafeai.app",
+  // Local development
   "http://localhost:5173",
   "http://127.0.0.1:5173",
 ];
@@ -87,6 +92,47 @@ type ErrorCode =
   | "invalid-response"
   | "service-unavailable"
   | "configuration";
+
+// ---------- per-user rate limiting ----------
+
+/*
+ * Best-effort per-user throttle, keyed on the VERIFIED user id from
+ * auth.getUser() - never on anything a client can set.
+ *
+ * State lives in this isolate's memory. Supabase may run several isolates,
+ * so this is not a hard global guarantee; it targets the realistic abuse
+ * case (one account calling in a tight loop), which keeps hitting the same
+ * warm isolate. It needs no database and cannot fail the request path. If a
+ * strict global limit is ever needed, move this counter into Postgres.
+ */
+const RATE_LIMIT_MAX_REQUESTS = 10;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_MAX_TRACKED_USERS = 5000; // bounds memory on a busy isolate
+
+const recentRequests = new Map<string, number[]>();
+
+function isRateLimited(userId: string, now: number = Date.now()): boolean {
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+  // Drop stale users so the map cannot grow without bound.
+  if (recentRequests.size > RATE_LIMIT_MAX_TRACKED_USERS) {
+    for (const [key, times] of recentRequests) {
+      if (times.every((t) => t <= windowStart)) recentRequests.delete(key);
+    }
+  }
+
+  const times = (recentRequests.get(userId) ?? []).filter((t) => t > windowStart);
+  if (times.length >= RATE_LIMIT_MAX_REQUESTS) {
+    // Not recording the rejected attempt stops a hammering client from
+    // extending its own lockout indefinitely.
+    recentRequests.set(userId, times);
+    return true;
+  }
+
+  times.push(now);
+  recentRequests.set(userId, times);
+  return false;
+}
 
 // ---------- prompt ----------
 
@@ -261,6 +307,17 @@ Deno.serve(async (request) => {
     return errorResponse(401, "unauthorized", "Authentication is required.");
   }
   console.info("generate-ai-feedback: authentication succeeded");
+
+  // Throttle before validation or any upstream call, so an abusive caller
+  // consumes neither Gemini quota nor meaningful compute.
+  if (isRateLimited(userData.user.id)) {
+    console.info("generate-ai-feedback: request rejected (per-user rate limit)");
+    return errorResponse(
+      429,
+      "rate-limit",
+      "You have requested feedback several times recently. Please try again in a few minutes.",
+    );
+  }
 
   // --- request size and body validation ---
   const declaredLength = Number(request.headers.get("Content-Length"));

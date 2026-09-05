@@ -95,13 +95,20 @@ Probed for additional functions (`hello-world`, `test`, `debug`, `admin`,
   (anon) key**, which are designed to be public. Their safety depends
   entirely on RLS being correct once tables exist.
 
-### 1.6 Per-user rate limiting — **does not exist**
+### 1.6 Per-user rate limiting — **implemented (best effort)**
 
-The function has no per-user or per-IP request throttling. The existing
-`rate-limit` error code only **relays Gemini's own HTTP 429** upstream
-response; it does not enforce any limit of our own. Any authenticated user
-can call the function in a loop and consume the project's Gemini quota.
-A proposal is in §5. **No code has been changed for this.**
+The function now throttles each authenticated user to **10 requests per
+10 minutes**, keyed on the verified `user.id` from `auth.getUser()` and
+enforced immediately after authentication — before validation and before
+any Gemini call — so an abusive caller consumes no upstream quota. Exceeding
+the limit returns the existing `429 rate-limit` shape, which the frontend
+already renders as a friendly message.
+
+The counter lives in the isolate's memory, so it is best-effort rather than a
+hard global guarantee: Supabase may run several isolates. It targets the
+realistic abuse case (one account looping, which keeps hitting the same warm
+isolate), needs no database, and cannot fail the request path. For a strict
+global limit, move the counter into Postgres — see §5 Option B.
 
 ---
 
