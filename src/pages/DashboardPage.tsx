@@ -82,15 +82,16 @@ function DashboardPage() {
   // Fresh data on first open and whenever the signed-in user changes —
   // returning from the Analyze page remounts this route, so new reports
   // appear without polling.
-  const loadReports = useCallback(() => {
+  const loadReports = useCallback(async () => {
     if (!userId) {
       setReports([]);
       setHasLoaded(true);
       return;
     }
+    setHasLoaded(false);
     try {
       // Only this user's reports, via the existing storage service.
-      setReports(getReportsByUser(userId));
+      setReports(await getReportsByUser(userId));
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -100,7 +101,7 @@ function DashboardPage() {
 
   useEffect(() => {
     if (!loading) {
-      loadReports();
+      void loadReports();
     }
   }, [loading, loadReports]);
 

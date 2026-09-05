@@ -42,15 +42,16 @@ function ReportsPage() {
 
   // Reload on mount and whenever the signed-in user changes, so reports
   // generated on the Analyze page appear when the user returns here.
-  const loadReports = useCallback(() => {
+  const loadReports = useCallback(async () => {
     if (!userId) {
       setReports([]);
       setHasLoaded(true);
       return;
     }
+    setHasLoaded(false);
     try {
       // Only this user's reports — guest reports (userId null) never appear.
-      setReports(getReportsByUser(userId));
+      setReports(await getReportsByUser(userId));
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -60,7 +61,7 @@ function ReportsPage() {
 
   useEffect(() => {
     if (!loading) {
-      loadReports();
+      void loadReports();
     }
   }, [loading, loadReports]);
 
@@ -87,10 +88,11 @@ function ReportsPage() {
     setReportToDelete(report);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!reportToDelete || isDeleting) return;
 
-    // Ownership check: never delete a report that is not the current user's.
+    // Ownership check in the UI. Row Level Security enforces the same rule
+    // server-side, so this is convenience rather than the actual boundary.
     if (!user || reportToDelete.userId !== user.id) {
       setFeedback({ type: 'error', text: 'You do not have permission to delete this report.' });
       setReportToDelete(null);
@@ -98,12 +100,12 @@ function ReportsPage() {
     }
 
     setIsDeleting(true);
-    const removed = deleteReport(reportToDelete.id);
+    const removed = await deleteReport(reportToDelete.id, user.id);
     setIsDeleting(false);
     setReportToDelete(null);
 
     if (removed) {
-      loadReports();
+      await loadReports();
       setFeedback({ type: 'success', text: 'The movement report was deleted.' });
     } else {
       setFeedback({ type: 'error', text: 'We could not delete this report. Please try again.' });

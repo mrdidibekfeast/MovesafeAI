@@ -192,10 +192,12 @@ function AnalyzePage() {
         userId: isAuthenticated && user ? user.id : null,
       });
 
-      const result = saveReport(report);
+      const result = await saveReport(report);
       if (!result.success) {
         setAnalysisError(
-          'Your analysis was created, but the report could not be saved in this browser.',
+          isAuthenticated
+            ? 'Your analysis was created, but the report could not be saved to your account. Please try again.'
+            : 'Your analysis was created, but the report could not be saved in this browser.',
         );
         setPhase('form');
         return;

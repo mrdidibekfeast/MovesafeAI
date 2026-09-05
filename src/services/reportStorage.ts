@@ -1,18 +1,22 @@
 import type { MovementReport } from '../types/report';
 import { sampleReports } from '../data/sampleReports';
 import { clampScore } from '../utils/scoreUtils';
+import { supabase } from './supabase';
 
 /*
- * Temporary project storage.
+ * Report storage — hybrid by design.
  *
- * Reports are kept in localStorage for now so the app works without a
- * database. This service is the ONLY place that touches localStorage for
- * reports — pages must always go through these functions, which makes it
- * easy to swap this file for a Supabase-backed implementation later.
+ *   Signed-in user (userId set) -> Supabase `reports` table.
+ *       Synced across devices, protected server-side by Row Level Security.
+ *   Guest (userId null)         -> this browser's localStorage.
+ *       RLS blocks anonymous writes, so guests keep the original behaviour:
+ *       reports live only in the browser that created them.
  *
- * Never store uploaded image/video contents, passwords, tokens, or
- * sessions here — only educational movement-analysis data and basic file
- * metadata (name, type, size).
+ * Uploaded videos are NEVER stored, in either path. Only file metadata
+ * (name, MIME type, size) is kept, exactly as before.
+ *
+ * Every public function is async because the database path is. Pages must
+ * handle the pending and failed states.
  */
 
 const STORAGE_KEY = 'movesafe_reports';
@@ -41,9 +45,9 @@ export function createReportId(): string {
   return `report-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-// ---------- internal helpers ----------
+// ---------- shared helpers ----------
 
-// Return a copy of the report with all scores normalized to 0–100.
+// Return a copy of the report with all scores normalized to 0-100.
 function normalizeReport(report: MovementReport): MovementReport {
   return {
     ...report,
@@ -62,6 +66,8 @@ function sortNewestFirst(reports: MovementReport[]): MovementReport[] {
   );
 }
 
+// ---------- localStorage (guest reports) ----------
+
 // Minimal structural check so one corrupt entry never discards the rest.
 function isReportLike(value: unknown): value is MovementReport {
   return (
@@ -77,10 +83,9 @@ function isReportLike(value: unknown): value is MovementReport {
  * Read and parse the stored reports. Invalid or missing data never crashes
  * the app — unreadable data behaves like an empty list, and individual
  * invalid entries are skipped while valid ones are kept. Both the current
- * versioned format and the original bare-array format are understood, so
- * reports saved before versioning keep working.
+ * versioned format and the original bare-array format are understood.
  */
-function readReports(): MovementReport[] {
+function readLocalReports(): MovementReport[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
@@ -107,7 +112,7 @@ function readReports(): MovementReport[] {
 // Write the reports in the versioned format. Returns false when storage is
 // unavailable or full (quota, privacy mode); existing stored data is left
 // untouched in that case.
-function writeReports(reports: MovementReport[]): boolean {
+function writeLocalReports(reports: MovementReport[]): boolean {
   try {
     const collection: StoredReportCollection = { version: STORAGE_VERSION, reports };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(collection));
@@ -117,82 +122,227 @@ function writeReports(reports: MovementReport[]): boolean {
   }
 }
 
-// ---------- public API ----------
+// ---------- database row mapping ----------
 
-export function getAllReports(): MovementReport[] {
-  return sortNewestFirst(readReports());
+interface ReportRow {
+  id: string;
+  user_id: string;
+  created_at: string;
+  movement_type: string;
+  custom_movement_name: string | null;
+  file_name: string;
+  file_type: string;
+  file_size: number | null;
+  status: string;
+  overall_score: number;
+  summary: string;
+  metrics: unknown;
+  observations: unknown;
+  recommendations: unknown;
+  notes: string | null;
 }
 
-export function getReportsByUser(userId: string): MovementReport[] {
-  return sortNewestFirst(readReports().filter((report) => report.userId === userId));
+function rowToReport(row: ReportRow): MovementReport {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    createdAt: row.created_at,
+    movementType: row.movement_type as MovementReport['movementType'],
+    customMovementName: row.custom_movement_name ?? undefined,
+    fileName: row.file_name,
+    fileType: row.file_type,
+    fileSize: row.file_size ?? undefined,
+    status: row.status as MovementReport['status'],
+    overallScore: clampScore(row.overall_score),
+    summary: row.summary,
+    metrics: (Array.isArray(row.metrics) ? row.metrics : []) as MovementReport['metrics'],
+    observations: (Array.isArray(row.observations) ? row.observations : []) as string[],
+    recommendations: (Array.isArray(row.recommendations)
+      ? row.recommendations
+      : []) as string[],
+    notes: row.notes ?? undefined,
+  };
 }
 
-export function getGuestReports(): MovementReport[] {
-  return sortNewestFirst(readReports().filter((report) => report.userId === null));
+function reportToRow(report: MovementReport, userId: string) {
+  return {
+    id: report.id,
+    user_id: userId,
+    created_at: report.createdAt,
+    movement_type: report.movementType,
+    custom_movement_name: report.customMovementName ?? null,
+    // File metadata only — never file contents.
+    file_name: report.fileName,
+    file_type: report.fileType,
+    file_size: report.fileSize ?? null,
+    status: report.status,
+    overall_score: clampScore(report.overallScore),
+    summary: report.summary,
+    metrics: report.metrics,
+    observations: report.observations,
+    recommendations: report.recommendations,
+    notes: report.notes ?? null,
+  };
 }
 
-export function getReportById(reportId: string): MovementReport | null {
-  return readReports().find((report) => report.id === reportId) ?? null;
-}
+// ---------- one-time lift of pre-database local reports ----------
 
-export function saveReport(report: MovementReport): SaveReportResult {
-  const reports = readReports();
+const migratedUsers = new Set<string>();
 
-  if (reports.some((existing) => existing.id === report.id)) {
-    return { success: false, error: 'duplicate-id' };
+/*
+ * Moves any localStorage reports belonging to this user into the database.
+ * Runs at most once per session per user, is idempotent (upsert on the
+ * primary key), and clears the local copies only after the write succeeds —
+ * a failure here must never lose data.
+ */
+async function migrateLocalReportsForUser(userId: string): Promise<void> {
+  if (migratedUsers.has(userId)) return;
+  migratedUsers.add(userId);
+
+  const local = readLocalReports();
+  const owned = local.filter((report) => report.userId === userId);
+  if (owned.length === 0) return;
+
+  const { error } = await supabase.from('reports').upsert(
+    owned.map((report) => reportToRow(normalizeReport(report), userId)),
+    { onConflict: 'id' },
+  );
+
+  if (error) {
+    migratedUsers.delete(userId); // allow a retry on the next load
+    return;
   }
 
-  const normalized = normalizeReport(report);
-  const next = [...reports, normalized];
+  // Confirmed saved server-side: drop only the copies just uploaded.
+  writeLocalReports(local.filter((report) => report.userId !== userId));
+}
 
-  if (!writeReports(next)) {
+// ---------- public API ----------
+
+/*
+ * All reports for a signed-in user, newest first.
+ *
+ * On first load this also lifts any reports still sitting in this browser's
+ * localStorage for the same user (created before the database existed) so
+ * nobody silently loses their history.
+ */
+export async function getReportsByUser(userId: string): Promise<MovementReport[]> {
+  await migrateLocalReportsForUser(userId);
+
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error('reports-load-failed');
+  return (data ?? []).map((row) => rowToReport(row as unknown as ReportRow));
+}
+
+/*
+ * A single report. Guest reports live in this browser, so localStorage is
+ * checked first; the database is consulted only when the visitor is signed
+ * in. RLS guarantees the query can only ever return that user's own row.
+ */
+export async function getReportById(
+  reportId: string,
+  userId: string | null,
+): Promise<MovementReport | null> {
+  const local = readLocalReports().find((report) => report.id === reportId);
+  if (local) return local;
+
+  if (!userId) return null;
+
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('id', reportId)
+    .maybeSingle();
+
+  if (error) throw new Error('reports-load-failed');
+  return data ? rowToReport(data as unknown as ReportRow) : null;
+}
+
+// Save a report to whichever store its owner belongs to.
+export async function saveReport(report: MovementReport): Promise<SaveReportResult> {
+  const normalized = normalizeReport(report);
+
+  // Guest: browser-only, exactly as before.
+  if (normalized.userId === null) {
+    const reports = readLocalReports();
+    if (reports.some((existing) => existing.id === normalized.id)) {
+      return { success: false, error: 'duplicate-id' };
+    }
+    if (!writeLocalReports([...reports, normalized])) {
+      return { success: false, error: 'storage-failed' };
+    }
+    return { success: true, report: normalized };
+  }
+
+  const { error } = await supabase
+    .from('reports')
+    .insert(reportToRow(normalized, normalized.userId));
+
+  if (error) {
+    // 23505 = unique violation on the primary key.
+    if (error.code === '23505') return { success: false, error: 'duplicate-id' };
     return { success: false, error: 'storage-failed' };
   }
   return { success: true, report: normalized };
 }
 
-export function updateReport(
+/*
+ * Delete a report. Guest reports are removed locally; a signed-in user's
+ * report is removed from the database, where RLS independently prevents
+ * deleting anyone else's row.
+ */
+export async function deleteReport(
   reportId: string,
-  updates: Partial<Omit<MovementReport, 'id'>>,
-): MovementReport | null {
-  const reports = readReports();
-  const index = reports.findIndex((report) => report.id === reportId);
-  if (index === -1) return null;
+  userId: string | null,
+): Promise<boolean> {
+  const localReports = readLocalReports();
+  const remaining = localReports.filter((report) => report.id !== reportId);
+  if (remaining.length !== localReports.length) {
+    return writeLocalReports(remaining);
+  }
 
-  // Merge the supplied fields, keep everything else, and never let the
-  // report ID change. Scores are re-normalized after the merge.
-  const updated = normalizeReport({
-    ...reports[index],
-    ...updates,
-    id: reports[index].id,
-  });
+  if (!userId) return false;
 
-  const next = reports.map((report, i) => (i === index ? updated : report));
-  if (!writeReports(next)) return null;
-  return updated;
+  const { error, count } = await supabase
+    .from('reports')
+    .delete({ count: 'exact' })
+    .eq('id', reportId);
+
+  if (error) return false;
+  return (count ?? 0) > 0;
 }
 
-export function deleteReport(reportId: string): boolean {
-  const reports = readReports();
-  const next = reports.filter((report) => report.id !== reportId);
-  if (next.length === reports.length) return false;
-  return writeReports(next);
+// ---------- local-only helpers (development) ----------
+
+// Guest reports held in this browser. Not used by pages.
+export function getGuestReports(): MovementReport[] {
+  return sortNewestFirst(readLocalReports().filter((report) => report.userId === null));
 }
 
-// Remove all guest reports (userId === null). Returns how many were removed.
+// Every report in this browser, guest or otherwise. Development helper.
+export function getAllReports(): MovementReport[] {
+  return sortNewestFirst(readLocalReports());
+}
+
+// Remove all guest reports from this browser. Returns how many were removed.
 export function clearGuestReports(): number {
-  const reports = readReports();
+  const reports = readLocalReports();
   const next = reports.filter((report) => report.userId !== null);
   const removed = reports.length - next.length;
   if (removed === 0) return 0;
-  return writeReports(next) ? removed : 0;
+  return writeLocalReports(next) ? removed : 0;
 }
 
-// ---------- development helper ----------
-
-// Adds the fictional sample reports, but only when no reports exist yet.
-// Call manually during development — never automatically in production code.
+// Adds the fictional sample reports as GUEST reports, but only when this
+// browser has none. Call manually during development.
 export function seedSampleReports(): boolean {
-  if (readReports().length > 0) return false;
-  return writeReports(sampleReports.map(normalizeReport));
+  if (readLocalReports().length > 0) return false;
+  return writeLocalReports(
+    sampleReports.map((report) => normalizeReport({ ...report, userId: null })),
+  );
 }

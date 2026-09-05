@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import type { CSSProperties } from 'react';
+import type { MovementReport } from '../types/report';
 import { useAuth } from '../hooks/useAuth';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { getReportById } from '../services/reportStorage';
@@ -26,11 +27,39 @@ function ReportDetailPage() {
   const [pdfMessage, setPdfMessage] = useState<string | null>(null);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
-  // All storage access goes through the report storage service.
-  const report = useMemo(
-    () => (reportId ? getReportById(reportId) : null),
-    [reportId],
-  );
+  // All storage access goes through the report storage service, which is
+  // async now: a signed-in user's reports come from the database, while
+  // guest reports still come from this browser.
+  const [report, setReport] = useState<MovementReport | null>(null);
+  const [isLoadingReport, setIsLoadingReport] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const userId = user?.id ?? null;
+
+  useEffect(() => {
+    // Wait for the session before fetching: userId decides where to look.
+    if (loading) return;
+
+    let cancelled = false;
+    setIsLoadingReport(true);
+    setLoadFailed(false);
+
+    (async () => {
+      try {
+        const found = reportId ? await getReportById(reportId, userId) : null;
+        if (!cancelled) setReport(found);
+      } catch {
+        if (!cancelled) setLoadFailed(true);
+      } finally {
+        if (!cancelled) setIsLoadingReport(false);
+      }
+    })();
+
+    // A slower response for a previous report must never overwrite a newer one.
+    return () => {
+      cancelled = true;
+    };
+  }, [reportId, userId, loading]);
 
   // A meaningful document title improves the browser's default print/PDF
   // file name. Restored when the route changes. Never includes IDs.
@@ -45,12 +74,43 @@ function ReportDetailPage() {
     };
   }, [report, user]);
 
-  // Never show a report before the ownership check can run.
-  if (loading) {
+  // Never show a report before the session resolves and the fetch finishes,
+  // so the ownership and sign-in checks below always see real data.
+  if (loading || isLoadingReport) {
     return (
       <section className="page-section report-page">
         <div className="layout-container">
           <LoadingState message="Loading your report…" />
+        </div>
+      </section>
+    );
+  }
+
+  // A failed load is not the same as a missing report — say so, and offer a
+  // retry rather than claiming the report does not exist.
+  if (loadFailed) {
+    return (
+      <section className="page-section report-page">
+        <div className="layout-container">
+          <div className="report-empty-state" role="alert">
+            <h1>Report Unavailable</h1>
+            <p>
+              We could not load this movement report. Please check your connection
+              and try again.
+            </p>
+            <div className="report-actions">
+              <button
+                type="button"
+                className="report-primary-button"
+                onClick={() => window.location.reload()}
+              >
+                Try Again
+              </button>
+              <Link to="/reports" className="report-secondary-button">
+                View My Reports
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     );
