@@ -45,17 +45,8 @@
 .header-brand-mark {
   width: 26px;
   height: 26px;
-  border-radius: 8px;
-  background-color: var(--color-text);
-  color: var(--color-background);
-  display: grid;
-  place-items: center;
+  object-fit: contain;
   flex-shrink: 0;
-}
-
-.header-brand-mark svg {
-  width: 16px;
-  height: 16px;
 }
 
 .header-brand-name {

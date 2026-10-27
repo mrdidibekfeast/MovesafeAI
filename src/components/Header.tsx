@@ -23,15 +23,10 @@ function getGreetingName(user: User | null): string {
   return 'My Account';
 }
 
-// Brand mark: a joint-angle polyline that also reads as an "M".
+// Brand mark: the same artwork as the browser-tab favicon (public/favicon.svg),
+// so the tab icon and the in-page logo never drift apart.
 function BrandMark() {
-  return (
-    <span className="header-brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2.5 12.5 6 4l2.5 5.5L11 6l2.5 6.5" />
-      </svg>
-    </span>
-  );
+  return <img src="/favicon.svg" alt="" className="header-brand-mark" aria-hidden="true" />;
 }
 
 function Header() {

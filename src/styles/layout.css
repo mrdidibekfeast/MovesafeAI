@@ -47,18 +47,9 @@
 }
 
 .footer-brand-mark {
-  display: grid;
-  place-items: center;
   width: 24px;
   height: 24px;
-  border-radius: 7px;
-  background-color: var(--color-text);
-  color: var(--color-background);
-}
-
-.footer-brand-mark svg {
-  width: 14px;
-  height: 14px;
+  object-fit: contain;
 }
 
 .footer-disclaimer {

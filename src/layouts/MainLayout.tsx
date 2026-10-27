@@ -23,11 +23,7 @@ function MainLayout() {
           <div className="footer-inner">
             <div>
               <Link to="/" className="footer-brand" aria-label="MoveSafe AI home">
-                <span className="footer-brand-mark" aria-hidden="true">
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2.5 12.5 6 4l2.5 5.5L11 6l2.5 6.5" />
-                  </svg>
-                </span>
+                <img src="/favicon.svg" alt="" className="footer-brand-mark" aria-hidden="true" />
                 MoveSafe AI
               </Link>
               <p className="footer-disclaimer">{FULL_EDUCATIONAL_DISCLAIMER}</p>
