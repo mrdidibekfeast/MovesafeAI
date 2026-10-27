@@ -53,6 +53,7 @@ const videoResources = [
     thumbnail: videoWarmupImg,
     thumbnailAlt: 'Play button over a dynamic warm-up thumbnail',
     topic: 'Dynamic Warm-Up',
+    searchQuery: 'dynamic warm up routine before running',
     title: 'How to Warm Up Before Exercising',
     source: 'NHS',
     description:
@@ -63,6 +64,7 @@ const videoResources = [
     thumbnail: videoKneeImg,
     thumbnailAlt: 'Play button over a knee exercises thumbnail',
     topic: 'Knee Control Exercises',
+    searchQuery: 'knee stability strengthening exercises',
     title: 'Knee Conditioning Program',
     source: 'OrthoInfo (AAOS)',
     description:
@@ -73,6 +75,7 @@ const videoResources = [
     thumbnail: videoAnkleImg,
     thumbnailAlt: 'Play button over an ankle strengthening thumbnail',
     topic: 'Ankle Strengthening',
+    searchQuery: 'ankle strengthening exercises',
     title: 'Foot & Ankle Conditioning Program',
     source: 'OrthoInfo (AAOS)',
     description:
@@ -83,6 +86,7 @@ const videoResources = [
     thumbnail: videoMobilityImg,
     thumbnailAlt: 'Play button over a foot and ankle mobility thumbnail',
     topic: 'Foot & Ankle Mobility',
+    searchQuery: 'foot and ankle mobility routine',
     title: 'NHS Exercise & Mobility Guides',
     source: 'NHS',
     description:
@@ -93,6 +97,7 @@ const videoResources = [
     thumbnail: videoLandingImg,
     thumbnailAlt: 'Play button over a landing mechanics thumbnail',
     topic: 'Landing Mechanics',
+    searchQuery: 'jump landing technique drills',
     title: 'Sports Medicine Movement Library',
     source: 'Hospital for Special Surgery',
     description:
@@ -103,6 +108,7 @@ const videoResources = [
     thumbnail: videoPreventionImg,
     thumbnailAlt: 'Play button over an injury prevention thumbnail',
     topic: 'General Injury Prevention',
+    searchQuery: 'injury prevention exercises for athletes',
     title: 'Fitness & Injury Prevention Basics',
     source: 'Mayo Clinic',
     description:
@@ -116,6 +122,7 @@ const warmupCards = [
     image: warmupAnkleImg,
     imageAlt: 'Illustration of an ankle mobility drill against a wall',
     title: 'Ankle Rocks',
+    searchQuery: 'ankle rocks knee to wall mobility drill',
     purpose: 'Improve ankle mobility before walking, running, or squatting.',
     cue: 'Keep your heel on the ground while moving your knee forward.',
     steps: [
@@ -128,6 +135,7 @@ const warmupCards = [
     image: warmupLegSwingImg,
     imageAlt: 'Illustration of a figure swinging one leg forward and back',
     title: 'Leg Swings',
+    searchQuery: 'leg swings dynamic warm up',
     purpose: 'Increase hip mobility and prepare the legs for movement.',
     cue: 'Keep your upper body stable while swinging your leg.',
     steps: [
@@ -140,6 +148,7 @@ const warmupCards = [
     image: warmupBridgeImg,
     imageAlt: 'Illustration of a glute bridge with the hips lifted',
     title: 'Glute Bridge',
+    searchQuery: 'glute bridge exercise proper form',
     purpose: 'Activate the glute muscles before activity.',
     cue: 'Lift using your hips, not your lower back.',
     steps: [
@@ -152,6 +161,7 @@ const warmupCards = [
     image: warmupSquatReachImg,
     imageAlt: 'Illustration of a squat with both arms reaching overhead',
     title: 'Squat to Reach',
+    searchQuery: 'squat to overhead reach warm up',
     purpose: 'Improve full-body mobility before exercise.',
     cue: 'Keep your chest up and move smoothly.',
     steps: [
@@ -514,6 +524,7 @@ const preventionCards = [
     image: kneeImg,
     imageAlt: 'Illustration of a leg with the knee joint highlighted',
     title: 'Knee Control',
+    searchQuery: 'knee valgus prevention exercises',
     description:
       'Keeping your knees stable and well-aligned protects the joint during everyday movement and activity.',
     tips: [
@@ -526,6 +537,7 @@ const preventionCards = [
     image: ankleImg,
     imageAlt: 'Illustration of an ankle joint with a balance arc beneath it',
     title: 'Ankle Sprain Prevention',
+    searchQuery: 'ankle sprain prevention balance exercises',
     description:
       'Strong, mobile ankles improve balance and help you stay stable on uneven surfaces.',
     tips: [
@@ -538,6 +550,7 @@ const preventionCards = [
     image: landingImg,
     imageAlt: 'Illustration of a figure landing with bent hips and knees',
     title: 'Landing Mechanics',
+    searchQuery: 'soft landing mechanics drills',
     description:
       'Absorbing impact through your hips and knees reduces stress on your joints when you land.',
     tips: [
@@ -550,6 +563,7 @@ const preventionCards = [
     image: shinImg,
     imageAlt: 'Illustration of a lower leg highlighting the shin and calf',
     title: 'Shin & Achilles Load',
+    searchQuery: 'shin splints and achilles strengthening exercises',
     description:
       'Managing training load and caring for your calves helps your shins and Achilles adapt safely.',
     tips: [
@@ -658,6 +672,7 @@ function LearnPage() {
                 title={card.title}
                 description={card.description}
                 tips={card.tips}
+                searchQuery={card.searchQuery}
               />
             ))}
           </div>
@@ -774,7 +789,8 @@ function LearnPage() {
           <p className="learn-section-description">
             A proper warm-up helps prepare your muscles and joints for movement,
             improves mobility, and may reduce the risk of injury during physical
-            activity.
+            activity. Each drill links to outside demonstrations so you can watch
+            several examples rather than learn it from one illustration.
           </p>
 
           <div className="warmup-grid">
@@ -787,6 +803,7 @@ function LearnPage() {
                 purpose={card.purpose}
                 cue={card.cue}
                 steps={card.steps}
+                searchQuery={card.searchQuery}
               />
             ))}
           </div>
@@ -807,14 +824,15 @@ function LearnPage() {
         aria-labelledby="video-resources-title"
       >
         <div className="layout-container">
-          <p className="learn-section-label">Video Resources</p>
+          <p className="learn-section-label">Trusted Resources</p>
           <h2 id="video-resources-title" className="learn-section-title">
             Continue Learning from Trusted Sources
           </h2>
           <p className="learn-section-description">
-            These resources offer additional education on movement quality, warm-ups,
-            injury prevention, and exercise technique. MoveSafe AI does not own or
-            create these videos — they open on each organization&apos;s own website.
+            Written guides from medical organizations, paired with a YouTube search
+            for each topic so you can compare demonstrations. MoveSafe AI does not
+            create or endorse these videos — links open on the source&apos;s own
+            site, and results are whatever the search returns.
           </p>
 
           <div className="video-grid">
@@ -828,6 +846,7 @@ function LearnPage() {
                 source={resource.source}
                 description={resource.description}
                 url={resource.url}
+                searchQuery={resource.searchQuery}
               />
             ))}
           </div>

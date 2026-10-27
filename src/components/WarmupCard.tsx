@@ -1,3 +1,5 @@
+import SearchLinks from './SearchLinks';
+
 interface WarmupCardProps {
   image: string;
   imageAlt: string;
@@ -5,9 +7,11 @@ interface WarmupCardProps {
   purpose: string;
   cue: string;
   steps: string[];
+  // Search phrase for outside demonstrations of this drill.
+  searchQuery: string;
 }
 
-function WarmupCard({ image, imageAlt, title, purpose, cue, steps }: WarmupCardProps) {
+function WarmupCard({ image, imageAlt, title, purpose, cue, steps, searchQuery }: WarmupCardProps) {
   return (
     <article className="warmup-card">
       <img src={image} alt={imageAlt} className="warmup-image" loading="lazy" />
@@ -25,6 +29,10 @@ function WarmupCard({ image, imageAlt, title, purpose, cue, steps }: WarmupCardP
             <li key={step}>{step}</li>
           ))}
         </ol>
+
+        {/* Several demonstrations beat our one illustration — send people to
+            compare examples before they try it. */}
+        <SearchLinks query={searchQuery} label="Watch it done first:" />
       </div>
     </article>
   );

@@ -9,6 +9,7 @@ import { buildReportPdfFileName, exportReportToPdf } from '../services/reportPdf
 import ReportMetricCard from '../components/ReportMetricCard';
 import LoadingState from '../components/LoadingState';
 import { formatFileSize } from '../utils/format';
+import { recommendationSearchQuery, youtubeSearchUrl } from '../utils/searchLinks';
 import {
   engineLabel,
   formatReportDate,
@@ -386,9 +387,31 @@ function ReportDetailPage() {
         <section className="recommendations-section" aria-labelledby="recommendations-title">
           <h2 id="recommendations-title">Suggested Next Steps</h2>
           <ol className="recommendations-list">
-            {report.recommendations.map((recommendation) => (
-              <li key={recommendation}>{recommendation}</li>
-            ))}
+            {report.recommendations.map((recommendation) => {
+              // Practice items get a search link so people can compare several
+              // demonstrations instead of guessing from one description.
+              const query = recommendationSearchQuery(recommendation);
+              return (
+                <li key={recommendation}>
+                  <span className="recommendation-body">
+                    <span>{recommendation}</span>
+                    {query && (
+                      <a
+                        href={youtubeSearchUrl(query)}
+                        className="recommendation-link pdf-exclude"
+                        data-html2canvas-ignore="true"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Search YouTube for ${query} (opens in a new tab)`}
+                      >
+                        See examples on YouTube
+                        <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                  </span>
+                </li>
+              );
+            })}
           </ol>
           <p className="report-muted">
             Stop any activity that causes pain and seek qualified guidance when needed.

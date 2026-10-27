@@ -10,6 +10,8 @@ import {
   validateAiFeedback,
   validateAiFeedbackContext,
   type AiFeedbackContext,
+  buildModelList,
+  shouldTryNextModel,
 } from "./validation.ts";
 
 /*
@@ -74,12 +76,19 @@ function resolveCors(request: Request): { allowed: boolean; headers: Record<stri
   return { allowed: decision.allowed, headers };
 }
 
-// Model stays server-side only; override with the GEMINI_MODEL secret.
-// gemini-flash-latest is Google's rolling alias for the current flash
-// model, so the default keeps working as older versions are retired
-// (verified 2026-07: fixed model names like gemini-2.5-flash are gated
-// for new API keys).
-const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-flash-latest";
+// Models stay server-side only. The first entry is the default; the rest are
+// fallbacks tried in order when a model is overloaded (503), rate-limited
+// (429), retired (404), or answers with nothing usable. Measured on this key
+// 2026-10-26: gemini-flash-latest (= 2.5-flash) returned 503 "high demand"
+// on every try - the free tier gets no capacity priority on a busy model -
+// while gemini-3.5-flash-lite answered in about a second. The GEMINI_MODEL
+// secret, if set, is tried first.
+const DEFAULT_GEMINI_MODELS = [
+  "gemini-3.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-flash-lite-latest",
+];
+const GEMINI_MODELS = buildModelList(Deno.env.get("GEMINI_MODEL"), DEFAULT_GEMINI_MODELS);
 const GEMINI_TIMEOUT_MS = 20_000;
 
 type ErrorCode =
@@ -143,7 +152,7 @@ function isRateLimited(userId: string, now: number = Date.now()): boolean {
  */
 function buildGeminiPrompt(context: AiFeedbackContext): string {
   return [
-    "You are an educational movement-learning assistant inside MoveSafe AI, a student demonstration app.",
+    "You are an educational movement-learning assistant inside MoveSafe AI, an educational movement-screening app.",
     "",
     "Rules:",
     "- MoveSafe AI is educational movement screening. Scores in the context come from automated 2-D pose estimation on phone video - NOT a clinical or medical assessment, and never evidence of injury or recovery.",
@@ -175,7 +184,7 @@ interface GeminiOutcome {
   networkError: boolean;
 }
 
-async function callGemini(apiKey: string, prompt: string): Promise<GeminiOutcome> {
+async function callGemini(apiKey: string, prompt: string, model: string): Promise<GeminiOutcome> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
@@ -183,7 +192,7 @@ async function callGemini(apiKey: string, prompt: string): Promise<GeminiOutcome
     let response: Response;
     try {
       response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         {
           method: "POST",
           headers: {
@@ -362,7 +371,24 @@ Deno.serve(async (request) => {
     return errorResponse(500, "configuration", "AI feedback is not configured correctly.");
   }
 
-  const outcome = await callGemini(apiKey, buildGeminiPrompt(context));
+  // Walk the model list: a busy or retired model hands off to the next one
+  // instead of failing the request. Model names are not secrets, so they
+  // can be logged; the key and the prompt never are.
+  const prompt = buildGeminiPrompt(context);
+  let outcome: GeminiOutcome = {
+    ok: false,
+    status: 0,
+    text: null,
+    timedOut: false,
+    networkError: true,
+  };
+  for (const model of GEMINI_MODELS) {
+    outcome = await callGemini(apiKey, prompt, model);
+    if (!shouldTryNextModel(outcome)) break;
+    console.info(
+      `generate-ai-feedback: model ${model} gave status ${outcome.status}${outcome.ok ? " with no usable text" : ""}; trying next model`,
+    );
+  }
 
   if (outcome.timedOut) {
     console.info("generate-ai-feedback: gemini status category: timeout");

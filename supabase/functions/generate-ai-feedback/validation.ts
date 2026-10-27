@@ -364,3 +364,41 @@ export function containsUnsafeLanguage(feedback: AiEducationalFeedback): boolean
     .toLowerCase();
   return UNSAFE_PHRASES.some((phrase) => combined.includes(phrase));
 }
+
+// ---------- model fallback ----------
+
+// Ordered, de-duplicated list of models to try: the configured one (if any)
+// first, then the defaults.
+export function buildModelList(configured: string | undefined, defaults: string[]): string[] {
+  const list: string[] = [];
+  const add = (name: string | undefined) => {
+    const trimmed = (name ?? '').trim();
+    if (trimmed && !list.includes(trimmed)) list.push(trimmed);
+  };
+  add(configured);
+  for (const name of defaults) add(name);
+  return list;
+}
+
+export interface ModelOutcomeShape {
+  ok: boolean;
+  status: number;
+  text: string | null;
+  timedOut: boolean;
+  networkError: boolean;
+}
+
+/*
+ * Whether a Gemini outcome means "this model is unavailable right now, try
+ * the next one" rather than "stop and report". A timeout has already spent
+ * the request's time budget, so it is reported as-is; auth/config errors
+ * (400/401/403) would fail on every model and are reported too.
+ */
+export function shouldTryNextModel(outcome: ModelOutcomeShape): boolean {
+  if (outcome.timedOut) return false;
+  if (outcome.networkError) return true;
+  if (!outcome.ok) {
+    return outcome.status === 404 || outcome.status === 429 || outcome.status >= 500;
+  }
+  return outcome.text === null;
+}

@@ -516,3 +516,80 @@
 .video-thumbnail {
   filter: saturate(0.55) brightness(0.82) contrast(1.05);
 }
+
+/* ===== Outbound search links (SearchLinks component) ===== */
+.search-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.search-links-label {
+  width: 100%;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.search-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--fill-ghost);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.search-link:hover,
+.search-link:focus-visible {
+  background-color: var(--fill-ghost-hover);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.search-link-primary {
+  background-color: var(--tint-primary);
+  color: var(--color-primary-dark);
+}
+
+.search-link-primary:hover,
+.search-link-primary:focus-visible {
+  background-color: var(--tint-primary-strong);
+  color: var(--color-text);
+}
+
+/* Resource cards: guide link + video search side by side */
+.video-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.video-actions .video-button {
+  margin-top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.video-button-secondary {
+  background-color: var(--fill-ghost);
+  color: var(--color-text);
+}
+
+.video-button-secondary:hover,
+.video-button-secondary:focus-visible {
+  background-color: var(--fill-ghost-hover);
+  color: var(--color-text);
+}

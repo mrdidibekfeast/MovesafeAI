@@ -839,3 +839,33 @@
   color: #f87171;
   border-color: rgba(248, 113, 113, 0.4);
 }
+
+/* ===== "See examples" link under a practice recommendation ===== */
+.recommendation-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.recommendation-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-primary-dark);
+}
+
+.recommendation-link:hover,
+.recommendation-link:focus-visible {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* Links are meaningless on paper */
+@media print {
+  .recommendation-link {
+    display: none;
+  }
+}
