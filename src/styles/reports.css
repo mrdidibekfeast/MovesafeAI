@@ -20,10 +20,10 @@
 .reports-label {
   display: inline-block;
   font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-text-subtle);
   margin-bottom: 8px;
 }
 
@@ -105,7 +105,7 @@
 .reports-search-input:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.28);
+  box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.28);
 }
 
 .reports-filter-group {
@@ -137,7 +137,7 @@
 .reports-sort select:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.28);
+  box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.28);
 }
 
 .reports-clear-filters {
@@ -181,8 +181,8 @@
 }
 
 .reports-feedback-success {
-  background-color: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  background-color: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
   color: var(--color-success);
 }
 
@@ -232,7 +232,7 @@
 }
 
 .report-history-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-1px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -263,12 +263,12 @@
 }
 
 .report-history-status-completed {
-  background-color: rgba(52, 211, 153, 0.14);
+  background-color: rgba(74, 222, 128, 0.14);
   color: var(--color-success);
 }
 
 .report-history-status-processing {
-  background-color: rgba(77, 141, 255, 0.12);
+  background-color: rgba(59, 91, 255, 0.12);
   color: var(--color-primary);
 }
 
@@ -320,7 +320,7 @@
 
 .report-history-delete-button {
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   background-color: transparent;
   color: var(--color-danger);
@@ -346,7 +346,7 @@
 
 .report-history-button {
   padding: 8px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-primary);
   background-color: transparent;
   color: var(--color-primary);
@@ -407,7 +407,7 @@
 
 .reports-retry-button {
   padding: 9px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 0.9rem;

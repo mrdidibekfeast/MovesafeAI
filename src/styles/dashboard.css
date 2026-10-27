@@ -36,7 +36,7 @@
   flex-shrink: 0;
   display: inline-block;
   padding: 12px 24px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 0.95rem;
@@ -141,7 +141,7 @@
 }
 
 .dashboard-recent-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-1px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -186,7 +186,7 @@
   margin-top: auto;
   align-self: flex-start;
   padding: 7px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
   font-size: 0.85rem;
@@ -242,7 +242,7 @@
 .dashboard-quick-action-button {
   align-self: flex-start;
   padding: 7px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.85rem;
@@ -341,7 +341,7 @@
   margin-top: auto;
   align-self: flex-start;
   padding: 7px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
   font-size: 0.83rem;
@@ -397,8 +397,8 @@
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  background-color: rgba(77, 141, 255, 0.10);
-  border: 1px solid rgba(77, 141, 255, 0.34);
+  background-color: rgba(59, 91, 255, 0.10);
+  border: 1px solid rgba(59, 91, 255, 0.34);
   color: var(--color-primary);
   font-size: 0.72rem;
   font-weight: 700;
@@ -432,7 +432,7 @@
 
 .dashboard-ai-generate-button {
   padding: 10px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 0.9rem;
@@ -451,7 +451,7 @@
 
 .dashboard-ai-cancel-button {
   padding: 10px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   background-color: transparent;
   color: var(--color-text);
@@ -589,7 +589,7 @@
 .dashboard-recommendation-action {
   align-self: flex-start;
   padding: 7px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.83rem;
@@ -654,7 +654,7 @@
 .dashboard-time-filter-select:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.28);
+  box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.28);
 }
 
 .dashboard-time-filter-note {
@@ -831,7 +831,7 @@
 .score-history-details-link {
   display: inline-block;
   padding: 6px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
   font-size: 0.82rem;
@@ -960,4 +960,11 @@
   .dashboard-primary-action {
     text-align: center;
   }
+}
+
+
+/* Emoji icons retired with the visual refresh; titles carry the meaning. */
+.dashboard-summary-icon,
+.dashboard-quick-action-icon {
+  display: none;
 }

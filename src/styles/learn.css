@@ -6,10 +6,10 @@
 .learn-section-label {
   display: inline-block;
   font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-primary);
+  color: var(--color-text-subtle);
   margin-bottom: 8px;
 }
 
@@ -90,7 +90,7 @@
 .nutrition-card:hover,
 .warmup-card:hover,
 .video-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-1px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -170,7 +170,7 @@
   align-self: flex-start;
   padding: 3px 10px;
   border-radius: 999px;
-  background-color: rgba(77, 141, 255, 0.12);
+  background-color: rgba(59, 91, 255, 0.12);
   color: var(--color-primary);
   font-size: 0.78rem;
   font-weight: 600;
@@ -229,7 +229,7 @@
   align-self: flex-start;
   margin-top: auto;
   padding: 8px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-primary);
   color: var(--color-primary);
   font-size: 0.9rem;
@@ -248,7 +248,7 @@
 .warmup-cue {
   padding: 10px 14px;
   border-radius: 10px;
-  background-color: rgba(77, 141, 255, 0.10);
+  background-color: rgba(59, 91, 255, 0.10);
   border-left: 3px solid var(--color-primary);
   font-size: 0.9rem;
   font-style: italic;
@@ -279,7 +279,7 @@
   align-self: flex-start;
   margin-top: auto;
   padding: 9px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 0.9rem;
@@ -314,7 +314,7 @@
 }
 
 .lic:hover {
-  transform: translateY(-4px);
+  transform: translateY(-1px);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -421,7 +421,7 @@
   margin-top: auto;
   padding: 12px 14px;
   border-radius: 10px;
-  background-color: rgba(52, 211, 153, 0.14);
+  background-color: rgba(74, 222, 128, 0.14);
   border-left: 3px solid var(--color-success);
   font-size: 0.9rem;
   color: var(--color-text);
@@ -444,7 +444,7 @@
   margin-top: 28px;
   padding: 16px 20px;
   border-radius: 12px;
-  background-color: rgba(77, 141, 255, 0.08);
+  background-color: rgba(59, 91, 255, 0.08);
   border: 1px solid var(--color-border);
 }
 
@@ -503,4 +503,16 @@
   .learn-image-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* The illustration assets were drawn for the old bright-blue theme; pulling
+   their saturation and brightness down lets them sit inside the neutral
+   palette without redrawing every SVG. */
+.learn-card-image,
+.prevention-image,
+.injury-image,
+.nutrition-image,
+.warmup-image,
+.video-thumbnail {
+  filter: saturate(0.55) brightness(0.82) contrast(1.05);
 }

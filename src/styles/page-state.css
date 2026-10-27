@@ -37,7 +37,7 @@
 .page-state-action {
   display: inline-block;
   padding: 10px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-weight: 600;

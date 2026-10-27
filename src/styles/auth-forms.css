@@ -86,13 +86,13 @@
 }
 
 .form-input::placeholder {
-  color: #6b7894;
+  color: var(--color-text-subtle);
 }
 
 .form-input:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.28);
+  box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.28);
 }
 
 .form-input.has-error {
@@ -186,7 +186,7 @@
 .signup-button,
 .password-button {
   padding: 12px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 1rem;

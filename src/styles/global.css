@@ -1,39 +1,47 @@
 :root {
   color-scheme: dark;
 
-  /* Blue/cyan accent pair, tuned for a dark canvas. NOTE: on a dark theme a
-     hover must get BRIGHTER, so --color-primary-dark is deliberately the
-     lighter shade — the name is kept so every existing hover rule still
-     resolves correctly. */
-  --color-primary: #4d8dff;
-  --color-primary-dark: #7cabff;
-  --color-primary-deep: #1c5fd0;
-  --color-accent: #22d3ee;
+  /*
+   * Palette. Neutral near-black canvas with one vivid blue. Surfaces are a
+   * step lighter than the canvas and separated by hairline white-alpha
+   * borders rather than shadows or glows.
+   *
+   * NOTE: on a dark theme a hover must get BRIGHTER, so --color-primary-dark
+   * is deliberately the lighter shade — the name is kept so every existing
+   * hover rule still resolves correctly.
+   */
+  --color-primary: #3b5bff;
+  --color-primary-dark: #5d79ff;
+  --color-primary-deep: #2846e6;
+  --color-accent: #8da2ff;
 
-  /* Layered dark surfaces: the page is near-black navy, cards lift out of it */
-  --color-background: #070a14;
-  --color-surface: #111726;
-  --color-surface-raised: #171e30;
-  --color-surface-sunken: #0b101c;
+  --color-background: #0f0f11;
+  --color-surface: #151518;
+  --color-surface-raised: #1b1b20;
+  --color-surface-sunken: #0b0b0d;
 
-  --color-text: #e9eef9;
-  --color-text-muted: #9aa7c2;
-  --color-border: #232c42;
-  --color-border-strong: #33405e;
+  --color-text: #f5f5f7;
+  --color-text-muted: #a1a1aa;
+  --color-text-subtle: #71717a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
 
-  --color-success: #34d399;
+  --color-success: #4ade80;
   --color-warning: #fbbf24;
   --color-danger: #f87171;
 
-  /* Translucent accents for glows, tints, and glass edges */
-  --tint-primary: rgba(77, 141, 255, 0.12);
-  --tint-primary-strong: rgba(77, 141, 255, 0.2);
-  --glow-primary: rgba(77, 141, 255, 0.35);
-  --glow-accent: rgba(34, 211, 238, 0.28);
-  --edge-highlight: rgba(255, 255, 255, 0.07);
+  /* Translucent accents for tints and focus rings */
+  --tint-primary: rgba(59, 91, 255, 0.12);
+  --tint-primary-strong: rgba(59, 91, 255, 0.24);
+  --glow-primary: rgba(59, 91, 255, 0.18);
+  --glow-accent: rgba(59, 91, 255, 0.1);
+  --edge-highlight: rgba(255, 255, 255, 0.06);
+  --fill-ghost: rgba(255, 255, 255, 0.06);
+  --fill-ghost-hover: rgba(255, 255, 255, 0.1);
 
-  --gradient-accent: linear-gradient(135deg, #7cabff 0%, #4d8dff 45%, #22d3ee 100%);
-  --gradient-surface: linear-gradient(180deg, #151c2e 0%, #101623 100%);
+  /* Legacy gradient tokens, flattened: no gradient text, no glowing cards */
+  --gradient-accent: linear-gradient(135deg, #f5f5f7, #c9c9d1);
+  --gradient-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0));
 
   /* Container widths */
   --content-width: 1200px;
@@ -48,22 +56,26 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  /* Radius + shadow scale (aliases of the established design values) */
-  --border-radius: 14px;
+  /* Radius scale. Buttons are rounded rectangles, not pills; pills are
+     reserved for small status chips. */
+  --border-radius: 12px;
   --radius-sm: 8px;
   --radius-md: var(--border-radius);
-  --radius-lg: 20px;
-  /* Dark-theme shadows carry a 1px inset highlight on the top edge. That
-     lit lip is what makes a surface read as raised rather than as a flat
-     rectangle, and baking it into the token gives every existing card the
-     treatment without touching a single component rule. */
-  --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --shadow-md: var(--shadow-soft);
-  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  --shadow-glow: 0 8px 30px var(--glow-primary);
+  --radius-lg: 16px;
+  --radius-button: 10px;
 
-  --font-body: 'Segoe UI', system-ui, -apple-system, 'Inter', Roboto, sans-serif;
+  /* Shadows are nearly flat; depth comes from borders and surface steps.
+     The one exception is the large framed preview on the landing page. */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: var(--shadow-soft);
+  --shadow-lg: 0 30px 80px -20px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 0 1px rgba(59, 91, 255, 0.35);
+  /* The 1px lit top edge on solid buttons */
+  --button-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  --font-body:
+    'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Reset */
@@ -79,22 +91,24 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: var(--font-body);
   font-size: 1rem;
-  line-height: 1.65;
+  line-height: 1.6;
   color: var(--color-text);
   background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Inter's alternate glyphs give it the crisper "display" look */
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
 /*
- * Ambient light. Two large, very soft radial washes sit behind all content
- * so the dark canvas has depth instead of reading as flat black. Fixed
- * attachment keeps them from sliding around while scrolling.
+ * One soft blue wash high behind the page, so the canvas is not dead flat.
+ * Fixed attachment keeps it still while scrolling.
  */
 body::before {
   content: '';
@@ -102,9 +116,7 @@ body::before {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(900px 600px at 78% -8%, rgba(77, 141, 255, 0.16), transparent 62%),
-    radial-gradient(760px 520px at 8% 4%, rgba(34, 211, 238, 0.09), transparent 60%);
+  background: radial-gradient(1100px 520px at 50% -12%, rgba(59, 91, 255, 0.14), transparent 62%);
 }
 
 h1,
@@ -113,15 +125,17 @@ h3,
 h4,
 h5,
 h6 {
-  line-height: 1.2;
-  font-weight: 700;
+  line-height: 1.15;
+  font-weight: 600;
   color: var(--color-text);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
-/* Optical correction: large headings need tighter tracking to look right */
+/* Large display headings get tighter tracking and a heavier weight */
 h1 {
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
 }
 
 p {
@@ -130,14 +144,15 @@ p {
 
 /* Links */
 a {
-  color: var(--color-primary);
+  color: var(--color-primary-dark);
   text-decoration: none;
 }
 
 a:hover,
 a:focus-visible {
-  color: var(--color-primary-dark);
+  color: var(--color-text);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* Buttons */
@@ -190,7 +205,7 @@ select {
 
 input::placeholder,
 textarea::placeholder {
-  color: #6b7894;
+  color: var(--color-text-subtle);
 }
 
 /* Native checkboxes/radios stay legible against dark surfaces */
@@ -210,10 +225,9 @@ input[type='radio'] {
 }
 
 /*
- * Card surfaces get a faint vertical gradient instead of a flat fill, so
- * they catch light from above like the rest of the theme. Page stylesheets
- * set background-COLOR on these, so setting background-IMAGE here layers on
- * top without fighting the cascade.
+ * Card surfaces get a faint vertical gradient instead of a flat fill. Page
+ * stylesheets set background-COLOR on these, so setting background-IMAGE
+ * here layers on top without fighting the cascade.
  */
 .dashboard-summary-card,
 .dashboard-chart-card,
@@ -251,13 +265,13 @@ input[type='radio'] {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: var(--color-border-strong);
+  background-color: rgba(255, 255, 255, 0.14);
   border: 3px solid var(--color-background);
   border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: #47567a;
+  background-color: rgba(255, 255, 255, 0.22);
 }
 
 /* Accessible hidden text — visible to screen readers, removed visually.
@@ -307,6 +321,10 @@ input[type='radio'] {
 /* Respect reduced-motion preferences globally. Loading indicators remain
    visible — every spinner in the app is paired with descriptive text. */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

@@ -31,12 +31,12 @@
   margin-bottom: 14px;
   padding: 4px 12px;
   border-radius: 999px;
-  background-color: rgba(251, 191, 36, 0.14);
-  border: 1px solid rgba(251, 191, 36, 0.38);
-  color: var(--color-warning);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  background-color: var(--fill-ghost);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -67,7 +67,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background-color: rgba(77, 141, 255, 0.12);
+  background-color: rgba(59, 91, 255, 0.12);
   color: var(--color-primary);
   font-weight: 700;
   font-size: 0.85rem;
@@ -79,7 +79,7 @@
   margin-bottom: 24px;
   padding: 12px 16px;
   border-radius: 12px;
-  background-color: rgba(77, 141, 255, 0.08);
+  background-color: rgba(59, 91, 255, 0.08);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-size: 0.9rem;
@@ -159,7 +159,7 @@
 
 .movement-option-selected {
   border-color: var(--color-primary);
-  background-color: rgba(77, 141, 255, 0.10);
+  background-color: rgba(59, 91, 255, 0.10);
   color: var(--color-primary);
 }
 
@@ -183,7 +183,7 @@
 
 .upload-zone-dragging {
   border-color: var(--color-primary);
-  background-color: rgba(77, 141, 255, 0.08);
+  background-color: rgba(59, 91, 255, 0.08);
 }
 
 .upload-zone-error {
@@ -212,7 +212,7 @@
   margin-right: 12px;
   padding: 8px 16px;
   border: 1px solid var(--color-border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: rgba(255, 255, 255, 0.05);
   color: var(--color-text);
   font: inherit;
@@ -290,7 +290,7 @@
 .file-remove-button {
   margin-top: 12px;
   padding: 7px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   background-color: transparent;
   font-size: 0.85rem;
@@ -324,7 +324,7 @@
 .analysis-notes:focus-visible {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(77, 141, 255, 0.28);
+  box-shadow: 0 0 0 3px rgba(59, 91, 255, 0.28);
 }
 
 .character-counter {
@@ -340,8 +340,8 @@
   margin-top: 18px;
   padding: 11px 14px;
   border-radius: 10px;
-  background-color: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  background-color: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
   color: var(--color-success);
   font-size: 0.9rem;
 }
@@ -350,7 +350,7 @@
   margin-top: 20px;
   width: 100%;
   padding: 13px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 1rem;
@@ -468,7 +468,7 @@
 
 .view-report-button {
   padding: 12px 26px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 0.95rem;
@@ -484,7 +484,7 @@
 
 .analyze-again-button {
   padding: 12px 26px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   background-color: transparent;
   color: var(--color-text);
@@ -597,7 +597,7 @@
 .processing-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background-image: linear-gradient(90deg, #5b96ff, #22d3ee);
+  background-image: linear-gradient(90deg, var(--color-primary), var(--color-accent));
   transition: width 0.2s ease;
 }
 

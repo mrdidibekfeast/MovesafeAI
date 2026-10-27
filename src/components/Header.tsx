@@ -23,6 +23,17 @@ function getGreetingName(user: User | null): string {
   return 'My Account';
 }
 
+// Brand mark: a joint-angle polyline that also reads as an "M".
+function BrandMark() {
+  return (
+    <span className="header-brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2.5 12.5 6 4l2.5 5.5L11 6l2.5 6.5" />
+      </svg>
+    </span>
+  );
+}
+
 function Header() {
   const { user, loading, isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
@@ -91,9 +102,10 @@ function Header() {
       to={isAuthenticated ? '/dashboard' : '/'}
       className="header-brand"
       onClick={closeMenu}
+      aria-label="MoveSafe AI home"
     >
+      <BrandMark />
       <span className="header-brand-name">MoveSafe AI</span>
-      <span className="header-brand-tagline">Movement insights</span>
     </Link>
   );
 
@@ -144,7 +156,7 @@ function Header() {
             </NavLink>
           )}
           <NavLink to="/analyze" className={withActive('header-link')} onClick={closeMenu}>
-            Analyze Movement
+            Analyze
           </NavLink>
           {isAuthenticated && (
             <NavLink to="/reports" className={withActive('header-link')} onClick={closeMenu}>
@@ -172,19 +184,19 @@ function Header() {
               onClick={handleSignOut}
               disabled={isSigningOut}
             >
-              {isSigningOut ? 'Signing Out…' : 'Sign Out'}
+              {isSigningOut ? 'Signing out…' : 'Sign out'}
             </button>
           </div>
         ) : (
           <div className="header-actions">
             <NavLink to="/login" className={withActive('header-login-link')} onClick={closeMenu}>
-              Login
+              Log in
             </NavLink>
             <NavLink to="/signup" className={withActive('header-signup-link')} onClick={closeMenu}>
-              Sign Up
+              Sign up
             </NavLink>
             <Link to="/analyze" className="header-start-button" onClick={closeMenu}>
-              Start Analysis
+              Start analysis
             </Link>
           </div>
         )}

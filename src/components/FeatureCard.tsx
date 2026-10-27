@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 interface FeatureCardProps {
-  icon: string;
+  icon: ReactNode;
   title: string;
   description: string;
   buttonText: string;

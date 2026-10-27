@@ -19,13 +19,41 @@ function MainLayout() {
       </main>
 
       <footer className="site-footer">
-        <div className="layout-container footer-inner">
-          <p className="footer-disclaimer">{FULL_EDUCATIONAL_DISCLAIMER}</p>
-          <nav className="footer-nav" aria-label="Legal information">
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/terms">Terms of Use</Link>
-            <Link to="/disclaimer">Disclaimer</Link>
-          </nav>
+        <div className="layout-container">
+          <div className="footer-inner">
+            <div>
+              <Link to="/" className="footer-brand" aria-label="MoveSafe AI home">
+                <span className="footer-brand-mark" aria-hidden="true">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2.5 12.5 6 4l2.5 5.5L11 6l2.5 6.5" />
+                  </svg>
+                </span>
+                MoveSafe AI
+              </Link>
+              <p className="footer-disclaimer">{FULL_EDUCATIONAL_DISCLAIMER}</p>
+            </div>
+            <nav className="footer-column" aria-label="Product">
+              <p className="footer-heading">Product</p>
+              <div className="footer-nav">
+                <Link to="/analyze">Analyze</Link>
+                <Link to="/learn">Learn</Link>
+                <Link to="/reports">Reports</Link>
+                <Link to="/dashboard">Dashboard</Link>
+              </div>
+            </nav>
+            <nav className="footer-column" aria-label="Legal information">
+              <p className="footer-heading">Legal</p>
+              <div className="footer-nav">
+                <Link to="/privacy">Privacy</Link>
+                <Link to="/terms">Terms of Use</Link>
+                <Link to="/disclaimer">Disclaimer</Link>
+              </div>
+            </nav>
+          </div>
+          <div className="footer-bottom">
+            <span>© {new Date().getFullYear()} MoveSafe AI</span>
+            <span>Educational movement screening. Not medical advice.</span>
+          </div>
         </div>
       </footer>
 

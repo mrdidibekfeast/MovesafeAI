@@ -1,21 +1,20 @@
 /*
- * Sticky glass bar. A solid fill would cut a hard band across the ambient
- * background glow, so the header is translucent and blurs what scrolls
- * beneath it. The fallback below keeps it opaque where blur is unsupported.
+ * 56px sticky bar. Translucent over the canvas with a hairline underline;
+ * the fallback keeps it opaque where blur is unsupported.
  */
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: rgba(10, 14, 24, 0.72);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  background-color: rgba(15, 15, 17, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid var(--color-border);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
   .header {
-    background-color: #0b1120;
+    background-color: var(--color-background);
   }
 }
 
@@ -23,122 +22,144 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
-  padding-block: 12px;
+  gap: 8px;
+  min-height: 56px;
+  padding-block: 8px;
 }
 
-/* Brand */
+/* Brand: mark + wordmark */
 .header-brand {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 20px;
+  color: var(--color-text);
 }
 
 .header-brand:hover,
 .header-brand:focus-visible {
+  color: var(--color-text);
   text-decoration: none;
 }
 
-.header-brand-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--color-text);
+.header-brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background-color: var(--color-text);
+  color: var(--color-background);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
 }
 
-.header-brand-tagline {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
+.header-brand-mark svg {
+  width: 16px;
+  height: 16px;
+}
+
+.header-brand-name {
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 /* Main navigation */
 .header-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-left: auto;
+  gap: 2px;
 }
 
-.header-link {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: var(--color-text);
+.header-link,
+.header-login-link {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 11px;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
   white-space: nowrap;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .header-link:hover,
-.header-link:focus-visible {
-  color: var(--color-primary-dark);
-  background-color: rgba(255, 255, 255, 0.05);
+.header-link:focus-visible,
+.header-login-link:hover,
+.header-login-link:focus-visible {
+  color: var(--color-text);
+  background-color: var(--fill-ghost);
   text-decoration: none;
 }
 
-.header-link.active {
-  color: var(--color-primary);
-  background-color: var(--tint-primary);
-  font-weight: 600;
+.header-link.active,
+.header-login-link.active {
+  color: var(--color-text);
+  background-color: var(--fill-ghost);
 }
 
 /* Right-side actions */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  margin-left: auto;
 }
 
-/* Login: plain link */
-.header-login-link {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.header-login-link:hover,
-.header-login-link:focus-visible {
-  color: var(--color-primary-dark);
-  background-color: rgba(255, 255, 255, 0.05);
-  text-decoration: none;
-}
-
-.header-login-link.active {
-  color: var(--color-primary);
-  background-color: var(--tint-primary);
-  font-weight: 600;
-}
-
-/* Sign Up: secondary (outlined) button */
+/* Sign up: ghost button */
 .header-signup-link {
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  font-size: 0.95rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--fill-ghost);
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--color-text);
   white-space: nowrap;
-  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .header-signup-link:hover,
-.header-signup-link:focus-visible {
-  border-color: var(--color-primary);
-  color: var(--color-primary-dark);
-  background-color: rgba(255, 255, 255, 0.05);
+.header-signup-link:focus-visible,
+.header-signup-link.active {
+  background-color: var(--fill-ghost-hover);
+  color: var(--color-text);
   text-decoration: none;
 }
 
-.header-signup-link.active {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+/* Start: small solid primary */
+.header-start-button {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: var(--color-primary);
+  box-shadow: var(--button-inset);
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.header-start-button:hover,
+.header-start-button:focus-visible {
+  color: #ffffff;
+  background-color: var(--color-primary-dark);
+  text-decoration: none;
 }
 
 /* Authenticated user indicator */
 .header-user {
   display: flex;
   align-items: center;
+  padding: 0 8px;
 }
 
 .header-user-name {
@@ -146,27 +167,28 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
-/* Sign Out: subtle button that turns to a warning on hover */
+/* Sign out: ghost button that turns to a warning on hover */
 .header-signout-button {
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background-color: transparent;
-  font-size: 0.95rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--fill-ghost);
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--color-text);
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .header-signout-button:hover:not(:disabled) {
-  border-color: var(--color-danger);
   color: var(--color-danger);
   background-color: rgba(248, 113, 113, 0.12);
 }
@@ -188,8 +210,8 @@
   right: 20px;
   margin-top: 6px;
   padding: 8px 12px;
-  border-radius: 8px;
-  background-color: var(--color-surface);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-raised);
   border: 1px solid rgba(248, 113, 113, 0.35);
   color: var(--color-danger);
   font-size: 0.85rem;
@@ -201,49 +223,26 @@
 /* Loading skeleton */
 .header-loading {
   margin-left: auto;
-  font-size: 0.9rem;
-  color: var(--color-text-muted);
-}
-
-.header-start-button {
-  padding: 9px 18px;
-  border-radius: 999px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #ffffff;
-  background-image: linear-gradient(135deg, #5b96ff, #2f6fe0);
-  box-shadow:
-    0 4px 14px rgba(47, 111, 224, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  white-space: nowrap;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.header-start-button:hover,
-.header-start-button:focus-visible {
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow:
-    0 8px 22px var(--glow-primary),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  text-decoration: none;
+  font-size: 0.85rem;
+  color: var(--color-text-subtle);
 }
 
 /* Menu button (hidden on desktop) */
 .header-menu-button {
   display: none;
   margin-left: auto;
-  padding: 6px 12px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   line-height: 1;
   color: var(--color-text);
-  transition: background-color 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .header-menu-button:hover {
-  background-color: var(--color-background);
+  background-color: var(--fill-ghost);
 }
 
 /* Mobile navigation */
@@ -263,11 +262,10 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 4px;
+    gap: 2px;
     width: 100%;
-    margin-left: 0;
-    margin-top: 4px;
-    padding-top: 12px;
+    margin-top: 6px;
+    padding-top: 10px;
     border-top: 1px solid var(--color-border);
   }
 
@@ -277,19 +275,21 @@
     align-items: stretch;
     gap: 8px;
     width: 100%;
-    padding-bottom: 8px;
+    margin-left: 0;
+    padding-block: 10px 8px;
   }
 
   .menu-open .header-link,
   .menu-open .header-login-link {
-    padding: 12px;
+    height: 44px;
+    padding: 0 12px;
   }
 
   .menu-open .header-signup-link,
   .menu-open .header-start-button,
   .menu-open .header-signout-button {
-    padding: 12px 18px;
-    text-align: center;
+    height: 44px;
+    justify-content: center;
   }
 
   .menu-open .header-user {

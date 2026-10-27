@@ -17,12 +17,12 @@
   margin-bottom: 14px;
   padding: 4px 12px;
   border-radius: 999px;
-  background-color: rgba(251, 191, 36, 0.14);
-  border: 1px solid rgba(251, 191, 36, 0.38);
-  color: var(--color-warning);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  background-color: var(--fill-ghost);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -41,7 +41,7 @@
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
-  background-color: rgba(52, 211, 153, 0.14);
+  background-color: rgba(74, 222, 128, 0.14);
   color: var(--color-success);
   font-size: 0.8rem;
   font-weight: 600;
@@ -259,7 +259,7 @@
 }
 
 .metric-status-good {
-  background-color: rgba(52, 211, 153, 0.14);
+  background-color: rgba(74, 222, 128, 0.14);
   color: var(--color-success);
 }
 
@@ -364,7 +364,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: rgba(77, 141, 255, 0.12);
+  background-color: rgba(59, 91, 255, 0.12);
   color: var(--color-primary);
   font-size: 0.8rem;
   font-weight: 700;
@@ -404,7 +404,7 @@
   margin-bottom: 24px;
   padding: 14px 18px;
   border-radius: 12px;
-  background-color: rgba(77, 141, 255, 0.08);
+  background-color: rgba(59, 91, 255, 0.08);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   font-size: 0.9rem;
@@ -420,7 +420,7 @@
 
 .report-primary-button {
   padding: 11px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   background-color: var(--color-primary);
   color: #ffffff;
   font-size: 0.95rem;
@@ -436,7 +436,7 @@
 
 .report-secondary-button {
   padding: 11px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-button);
   border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.95rem;
@@ -536,7 +536,7 @@
   --color-text-muted: #5b6577;
   --color-border: #dfe4ec;
   --color-border-strong: #c7cfdd;
-  --color-primary: #1f6feb;
+  --color-primary: var(--color-primary);
   --color-primary-dark: #174ea6;
   --color-success: #16835a;
   --color-warning: #96590a;
@@ -581,8 +581,8 @@
 }
 
 .report-pdf-feedback-success {
-  background-color: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.35);
+  background-color: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
   color: var(--color-success);
 }
 
@@ -616,7 +616,7 @@
     --color-text-muted: #5b6577;
     --color-border: #dfe4ec;
     --color-border-strong: #c7cfdd;
-    --color-primary: #1f6feb;
+    --color-primary: var(--color-primary);
     --color-primary-dark: #174ea6;
     --color-success: #16835a;
     --color-warning: #96590a;
@@ -826,8 +826,8 @@
 }
 
 .metric-confidence-high {
-  color: #34d399;
-  border-color: rgba(52, 211, 153, 0.4);
+  color: var(--color-success);
+  border-color: rgba(74, 222, 128, 0.4);
 }
 
 .metric-confidence-medium {

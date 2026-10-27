@@ -74,9 +74,12 @@ supabase/
    for errors, `role="status"` + `aria-live="polite"` for loading/success, ARIA
    progressbars on all score bars, focus-visible rings, never color-only meaning,
    `prefers-reduced-motion` respected.
-8. Design tokens live in `src/styles/global.css` `:root` (primary #1f6feb, radius
-   14px `--border-radius`, `--shadow-soft`, etc.). Cards: white surface, 1px border,
-   soft shadow, −3/−4px hover lift.
+8. Design tokens live in `src/styles/global.css` `:root`. Visual language (modelled
+   on 21st.dev): neutral near-black canvas (#0f0f11), Inter with tight tracking, one
+   vivid blue (#3b5bff), hairline white-alpha borders, flat surfaces, 10px-radius
+   buttons with a 1px inset top highlight (`--radius-button`, `--button-inset`), pills
+   only for small chips, no gradient text, no glows, no emoji icons (inline SVG).
+   Hover = border brightens or 1px lift, never a bounce.
 9. Auth pages share `auth-forms.css`; shared validation in `utils/authValidation.ts`.
 10. **Verification loop after every change:** `npx tsc -b` && `npm run lint`, then
     test in the browser (services are tested by dynamic-importing `/src/...ts`
