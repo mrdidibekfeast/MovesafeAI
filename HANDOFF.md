@@ -18,23 +18,43 @@ nobody warns you.
 
 ## 1. What this actually is
 
-An educational movement-screening web app. A user uploads a short video of a
-movement (squat, jump, landing, running, walking, or custom) and gets back a
-movement-quality report: an overall score, per-metric scores, observations,
-and suggestions.
+An educational movement-screening web app. A user uploads two short videos of
+a movement (squat, jump, landing, running, walking, or custom) — one filmed
+from the **front**, one from the **side** — and gets back a movement-quality
+report: an overall score, per-metric measured angles with confidence, scores,
+observations, and suggestions.
 
-**The analysis is simulated.** There is no computer vision, no pose
-estimation, no MediaPipe. `src/services/movementAnalysis.ts` is a
-deterministic generator seeded from the file name, movement type, and
-timestamp — the same input always produces the same report. This is
-intentional and disclosed throughout the UI.
+**The analysis is real but deliberately limited.** Pose detection runs in the
+browser with MediaPipe Pose Landmarker (`@mediapipe/tasks-vision`); joint
+angles are computed from the 33 detected landmarks. The engine lives in three
+files:
+
+- `src/services/poseDetection.ts` — loads the model (WASM + weights from
+  CDN, cached), decodes each video at 10 fps for up to 12 s, returns landmark
+  frames in pixel coordinates. Nothing leaves the browser.
+- `src/services/biomechanics.ts` — pure maths: knee flexion, frontal-plane
+  projection angle (2-D valgus), trunk/pelvis angles, view classification,
+  gait contacts/cadence, landing detection, score bands. Unit-tested with
+  synthetic skeletons (53 cases); no DOM.
+- `src/services/movementAnalysis.ts` — picks the metrics that are valid for
+  each camera view and movement, scores them, writes the narrative.
+
+What it does **not** measure, on purpose: anything in millimetres (a single
+camera has no scale), out-of-plane angles, foot arch / rearfoot (no landmarks
+there), force, or depth. Each metric carries a confidence from landmark
+visibility, and a video that is clearly the wrong view is rejected.
+
+Reports made before this engine existed have no `engine` column value and
+still display as "Simulated Educational Analysis"; new reports are
+`engine = 'pose'` and display as "Automated Movement Screening".
 
 This matters for every product decision: the app must never read as medical
-advice, and the "simulated" framing is load-bearing, not decoration.
+advice. "Screening, not assessment" is load-bearing, not decoration.
 
-**The uploaded video is never stored or transmitted.** It lives in browser
-memory as an object URL that gets revoked. Only file metadata (name, MIME
-type, size) is persisted. Keep it that way unless there is a deliberate
+**The uploaded videos are never stored or transmitted.** They live in browser
+memory as object URLs that get revoked; the pose model reads frames from a
+local canvas. Only file metadata (name, MIME type, size) for both videos is
+persisted. Keep it that way unless there is a deliberate
 decision to change it, including updating the Privacy page.
 
 ---
@@ -268,15 +288,31 @@ curl -s -D - -o /dev/null -X OPTIONS \
 ## 8. Suggested priorities
 
 1. **Fix signup email (SMTP).** Blocks all new users.
-2. **Verify the signed-in save path** end to end across two devices.
-3. **Check Gemini billing.** The key is on Marcus's Google account; confirm
+2. **Calibrate the engine on real athletes.** The scoring bands in
+   `movementAnalysis.ts` (valgus 8°/10°, squat trunk lean 40°/55°, landing
+   knee bend 35°/25°, cadence 165–185, and so on) are reasonable screening
+   defaults from the literature, not calibrated against this pipeline. Film
+   10–20 athletes squarely from the front and side, look at the raw measured
+   values on the report cards, and move the bands to where they separate the
+   people a coach would actually flag. The engine was validated against
+   synthetic skeletons (58 unit cases) and three CC-licensed Wikimedia
+   Commons squat clips — it has not yet seen a sports team.
+3. **Known limitation — oblique front camera.** If the "front" video is
+   filmed from a corner rather than squarely, forward lean during a squat
+   projects as sideways lean and pelvic tilt. The engine detects the
+   signature of this (sideways lean rising and falling in lockstep with
+   squat depth), drops front-view confidence to low, and asks the athlete
+   to re-film; it cannot correct for it. Filming guidance on the Analyze
+   page exists for this reason — keep it prominent.
+4. **Verify the signed-in save path** end to end across two devices.
+5. **Check Gemini billing.** The key is on Marcus's Google account; confirm
    whether it has hard caps or a card attached. The rate limit helps, but
    this is the only real cost exposure.
-4. **Add error tracking.** There is none — if the app breaks for a user,
+6. **Add error tracking.** There is none — if the app breaks for a user,
    nobody finds out. Sentry's free tier is ~10 minutes.
-5. **Add analytics.** Vercel Analytics is a toggle.
-6. **Update the stale docs** (below).
-7. Consider a test suite. There is currently none.
+7. **Add analytics.** Vercel Analytics is a toggle.
+8. **Update the stale docs** (below).
+9. Consider a real test runner. The engine unit tests currently live in a scratch file (see §3); wire them into vitest.
 
 ---
 
@@ -302,8 +338,9 @@ mentions Compare and localStorage-only storage.
 Things that should not change without a deliberate decision:
 
 1. **Educational framing.** No "diagnosis", "injury detected", "recovery",
-   "treatment", "medically safe". The simulated-analysis labels and
-   disclaimers stay until the analysis is actually real.
+   "treatment", "medically safe". "Automated Movement Screening — not a
+   clinical assessment" wording and the disclaimers stay. Legacy reports keep
+   their "Simulated" badge; never relabel them.
 2. **No video leaves the browser.** Not to Supabase, not to Gemini.
 3. **The Gemini key stays server-side.** Never a `VITE_` variable.
 4. **All report storage goes through `reportStorage.ts`.**

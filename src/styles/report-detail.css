@@ -792,3 +792,50 @@
     text-align: center;
   }
 }
+
+
+/* ===== Measured value + confidence chips (pose-engine metrics) ===== */
+.metric-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.metric-chips .metric-status {
+  margin-bottom: 0;
+}
+
+.metric-measured,
+.metric-confidence {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+}
+
+.metric-measured {
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-confidence-high {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.4);
+}
+
+.metric-confidence-medium {
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.4);
+}
+
+.metric-confidence-low {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+}

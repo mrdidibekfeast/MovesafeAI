@@ -48,6 +48,18 @@ export const METRIC_STATUS_LABELS: Record<MetricStatus, string> = {
   warning: 'Warning',
 };
 
+// Badge wording depends on which engine produced the report. Reports from
+// before pose detection existed carry no engine and stay honestly labeled.
+export function engineLabel(report: Pick<MovementReport, 'engine'>): string {
+  return report.engine === 'pose'
+    ? 'Automated Movement Screening'
+    : 'Simulated Educational Analysis';
+}
+
+export function isPoseReport(report: Pick<MovementReport, 'engine'>): boolean {
+  return report.engine === 'pose';
+}
+
 export function formatReportDate(iso: string): string {
   const date = new Date(iso);
   return `${date.toLocaleDateString(undefined, {

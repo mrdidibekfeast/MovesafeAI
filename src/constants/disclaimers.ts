@@ -5,7 +5,7 @@
  */
 
 export const SHORT_EDUCATIONAL_DISCLAIMER =
-  'Simulated educational feedback only. Not medical advice.';
+  'Educational movement screening only. Not medical advice.';
 
 export const FULL_EDUCATIONAL_DISCLAIMER =
-  'MoveSafe AI provides simulated educational movement feedback. It is not a medical diagnosis, injury assessment, or substitute for evaluation by a qualified healthcare professional.';
+  'MoveSafe AI provides automated educational movement screening. It is not a medical diagnosis, injury assessment, or substitute for evaluation by a qualified healthcare professional.';

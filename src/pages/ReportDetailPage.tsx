@@ -9,7 +9,13 @@ import { buildReportPdfFileName, exportReportToPdf } from '../services/reportPdf
 import ReportMetricCard from '../components/ReportMetricCard';
 import LoadingState from '../components/LoadingState';
 import { formatFileSize } from '../utils/format';
-import { formatReportDate, movementLabel, scoreBand } from '../utils/reportDisplay';
+import {
+  engineLabel,
+  formatReportDate,
+  isPoseReport,
+  movementLabel,
+  scoreBand,
+} from '../utils/reportDisplay';
 import '../styles/report-detail.css';
 
 function ReportDetailPage() {
@@ -183,7 +189,7 @@ function ReportDetailPage() {
       <section className="page-section report-page">
         <div className="layout-container report-container">
           <header className="report-header">
-            <span className="report-badge">Simulated Educational Analysis</span>
+            <span className="report-badge">{engineLabel(report)}</span>
             <h1 className="report-title">{movementLabel(report)} Movement Report</h1>
             <p className="report-meta">{formatReportDate(report.createdAt)}</p>
           </header>
@@ -244,9 +250,9 @@ function ReportDetailPage() {
           </div>
 
           <p className="report-disclaimer">
-            This report provides simulated educational movement feedback. It is not a
-            medical diagnosis, injury assessment, or substitute for evaluation by a
-            qualified healthcare professional.
+            {isPoseReport(report)
+              ? 'This report is automated educational movement screening based on pose detection. It is not a medical diagnosis, injury assessment, or substitute for evaluation by a qualified healthcare professional.'
+              : 'This report provides simulated educational movement feedback. It is not a medical diagnosis, injury assessment, or substitute for evaluation by a qualified healthcare professional.'}
           </p>
         </div>
       </section>
@@ -293,7 +299,7 @@ function ReportDetailPage() {
 
         {/* Header */}
         <header className="report-header">
-          <span className="report-badge">Simulated Educational Analysis</span>
+          <span className="report-badge">{engineLabel(report)}</span>
           <h1 className="report-title">{movementLabel(report)} Movement Report</h1>
           <p className="report-meta">
             {formatReportDate(report.createdAt)} ·{' '}
@@ -352,6 +358,9 @@ function ReportDetailPage() {
                 score={metric.score}
                 status={metric.status}
                 description={metric.description}
+                value={metric.value}
+                unit={metric.unit}
+                confidence={metric.confidence}
               />
             ))}
           </div>
@@ -401,18 +410,42 @@ function ReportDetailPage() {
         <section className="report-details" aria-labelledby="details-title">
           <h2 id="details-title">Analysis Details</h2>
           <dl className="report-details-grid">
-            {/* Uploaded file name is kept off the PDF for privacy. */}
+            <div>
+              <dt>Analysis method</dt>
+              <dd>
+                {isPoseReport(report)
+                  ? 'On-device pose detection (front + side video)'
+                  : 'Simulated (demonstration)'}
+              </dd>
+            </div>
+            {/* Uploaded file names are kept off the PDF for privacy. */}
             <div className="pdf-exclude" data-html2canvas-ignore="true">
-              <dt>File name</dt>
+              <dt>{report.sideFileName ? 'Front video' : 'File name'}</dt>
               <dd>{report.fileName}</dd>
             </div>
+            {report.sideFileName && (
+              <div className="pdf-exclude" data-html2canvas-ignore="true">
+                <dt>Side video</dt>
+                <dd>{report.sideFileName}</dd>
+              </div>
+            )}
             <div>
-              <dt>File type</dt>
-              <dd>{report.fileType}</dd>
+              <dt>{report.sideFileName ? 'Video types' : 'File type'}</dt>
+              <dd>
+                {report.fileType}
+                {report.sideFileType && report.sideFileType !== report.fileType
+                  ? `, ${report.sideFileType}`
+                  : ''}
+              </dd>
             </div>
             <div>
-              <dt>File size</dt>
-              <dd>{report.fileSize ? formatFileSize(report.fileSize) : 'Not recorded'}</dd>
+              <dt>{report.sideFileName ? 'Video sizes' : 'File size'}</dt>
+              <dd>
+                {report.fileSize ? formatFileSize(report.fileSize) : 'Not recorded'}
+                {report.sideFileName
+                  ? ` + ${report.sideFileSize ? formatFileSize(report.sideFileSize) : 'Not recorded'}`
+                  : ''}
+              </dd>
             </div>
             <div>
               <dt>Movement</dt>
@@ -431,10 +464,9 @@ function ReportDetailPage() {
 
         {/* Disclaimer — part of the printable PDF content */}
         <p className="report-disclaimer">
-          This report provides simulated educational movement feedback. It is not a
-          medical diagnosis, injury assessment, or substitute for evaluation by a
-          qualified healthcare professional. Scores and recommendations are generated
-          for demonstration and educational purposes.
+          {isPoseReport(report)
+            ? 'This report is automated educational movement screening. Joint angles were measured by pose detection running in your browser; a single phone camera cannot measure depth, force, or the foot arch, and lighting, clothing, and camera angle all affect accuracy. It is not a medical diagnosis, injury assessment, or substitute for evaluation by a qualified healthcare professional.'
+            : 'This report provides simulated educational movement feedback. It is not a medical diagnosis, injury assessment, or substitute for evaluation by a qualified healthcare professional. Scores and recommendations are generated for demonstration and educational purposes.'}
         </p>
 
         {/* Small footer that appears only on printed output */}

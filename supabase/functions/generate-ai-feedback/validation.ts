@@ -112,7 +112,7 @@ const MAX_LIST_ITEM_LENGTH = 220;
 const MAX_DISCLAIMER_LENGTH = 400;
 
 export const FALLBACK_DISCLAIMER =
-  'This AI-generated explanation is based on simulated educational report summaries. It is not medical advice, diagnosis, or proof of physical improvement.';
+  'This AI-generated explanation is based on educational screening report summaries. It is not medical advice, diagnosis, or proof of physical improvement.';
 
 // ---------- text and score sanitizers ----------
 

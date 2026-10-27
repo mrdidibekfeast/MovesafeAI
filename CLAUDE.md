@@ -8,10 +8,12 @@
 
 ## Purpose
 
-MoveSafe AI is a **student demonstration project**: an educational movement-screening
-web app. Users upload a short video of a movement (squat, jump, landing, running,
-walking, or custom) and receive a **simulated** educational movement-quality report.
-Everything is explicitly educational — never medical advice, diagnosis, or treatment.
+MoveSafe AI is an educational movement-screening web app. Users upload a **front**
+video and a **side** video of a movement (squat, jump, landing, running, walking, or
+custom); MediaPipe pose detection runs in the browser and the app measures real
+joint angles (knee valgus / FPPA, knee flexion, trunk lean, pelvic tilt, cadence,
+landing absorption) with a confidence per metric. Everything is explicitly
+educational screening — never medical advice, diagnosis, or treatment.
 
 ## Technology Stack
 
@@ -54,8 +56,9 @@ supabase/
 ## Permanent Rules (do not reverse)
 
 1. **Educational language only.** Never "diagnosis", "injury detected", "recovery",
-   "treatment", "medically safe". Always keep visible "Simulated Educational
-   Analysis" labels and disclaimers until real analysis exists.
+   "treatment", "medically safe". Keep the visible "Automated Movement Screening"
+   badge and disclaimers; reports with no `engine` (pre-pose) keep their
+   "Simulated Educational Analysis" badge via `engineLabel()`.
 2. **Privacy:** never display/log/send user IDs, emails, tokens, sessions, full
    report IDs, uploaded file contents, or preview URLs. Never store files/Base64 in
    localStorage. Gemini receives only the limited context in `geminiFeedback.ts`.
@@ -93,8 +96,11 @@ Dev server is launched via the Claude browser pane config `.claude/launch.json`
 
 ## Major Decisions (locked)
 
-- Movement analysis is **simulated** (deterministic seeded generator in
-  `movementAnalysis.ts`) until a later real-analysis step; UI labels it clearly.
+- Movement analysis is **real 2-D pose analysis** (`poseDetection.ts` →
+  `biomechanics.ts` → `movementAnalysis.ts`), requiring both a front and a side
+  video. Only metrics valid for a view are reported; nothing is estimated in
+  millimetres or out of plane. The `@mediapipe/tasks-vision` dependency is the one
+  sanctioned exception to the no-heavy-dependencies rule.
 - Guest users may analyze; guest reports use `userId: null` and are viewable only
   in-browser. Signed-in reports require owner match. Guests never appear on
   protected pages (`/reports`, `/dashboard`, `/compare`).

@@ -18,14 +18,22 @@ function DisclaimerPage() {
         <p className="legal-highlight">{FULL_EDUCATIONAL_DISCLAIMER}</p>
 
         <div className="legal-section">
-          <h2>Simulated Results</h2>
+          <h2>Automated Screening, Not Assessment</h2>
           <p>
-            MoveSafe AI is a student demonstration project. Every movement
-            report, score, metric, observation, and recommendation is generated
-            by a simulated educational process — the application does not
-            measure your actual biomechanics, and identical uploads always
-            produce the same simulated result. Reports are learning material,
-            not assessments of your body.
+            MoveSafe AI measures joint positions in your front and side videos
+            using pose detection that runs in your browser, then calculates
+            angles such as knee valgus, knee bend, trunk lean, and pelvic tilt.
+            These are two-dimensional estimates from an ordinary camera: they
+            cannot measure depth, force, foot-arch shape, or anything in
+            millimetres, and lighting, clothing, camera angle, and distance all
+            affect accuracy. Each metric shows a confidence level for this
+            reason. Reports are learning material, not assessments of your
+            body.
+          </p>
+          <p>
+            Reports created before automated screening was introduced are
+            labeled &quot;Simulated Educational Analysis&quot; and contain
+            demonstration values rather than measurements.
           </p>
         </div>
 
@@ -34,7 +42,7 @@ function DisclaimerPage() {
           <p>
             Nothing in this application diagnoses injuries, measures health,
             confirms recovery, or clears anyone for physical activity. Score
-            changes between reports are educational comparisons of simulated
+            changes between reports are educational comparisons of screening
             values, never evidence of physical improvement or decline.
           </p>
           <ul>
@@ -56,7 +64,7 @@ function DisclaimerPage() {
         <div className="legal-section">
           <h2>AI-Generated Content</h2>
           <p>
-            Optional AI feedback rephrases your simulated report summary in an
+            Optional AI feedback rephrases your report summary in an
             educational tone. It inherits every limitation described above and
             is validated to avoid medical claims, but like all AI-generated
             text it can be imperfect. The locally generated feedback and your

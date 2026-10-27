@@ -60,7 +60,7 @@ function HomePage() {
               </Link>
             </div>
             <ul className="hero-meta">
-              <li className="hero-meta-item">Simulated educational analysis</li>
+              <li className="hero-meta-item">Pose detection runs on your device</li>
               <li className="hero-meta-item">No account needed to try</li>
               <li className="hero-meta-item">Your video stays in your browser</li>
             </ul>

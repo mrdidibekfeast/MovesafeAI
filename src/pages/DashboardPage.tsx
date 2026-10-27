@@ -279,8 +279,8 @@ function DashboardPage() {
                   Educational Feedback
                 </h2>
                 <p className="dashboard-feedback-description">
-                  These insights are generated locally from your completed simulated
-                  movement reports.
+                  These insights are generated locally from your completed movement
+                  reports.
                 </p>
               </div>
 
@@ -343,7 +343,7 @@ function DashboardPage() {
               )}
 
               <p className="dashboard-trends-note">
-                These insights are generated from simulated educational reports and
+                These insights are generated from educational screening reports and
                 should not be interpreted as medical advice or proof of physical
                 improvement.
               </p>
@@ -358,15 +358,15 @@ function DashboardPage() {
                 </h2>
                 <p className="dashboard-ai-description">
                   Generate an optional explanation based on a limited summary of your
-                  completed simulated reports.
+                  completed reports.
                 </p>
                 {/* Implementation note: Gemini requests are handled by a
                     Supabase Edge Function. The Gemini API key is stored as a
                     server-side Supabase secret and is not included in the
                     Vite client bundle. */}
                 <p className="dashboard-ai-privacy-note">
-                  Only a limited summary of simulated scores and metric names is
-                  sent securely through a Supabase Edge Function to Gemini.
+                  Only a limited summary of scores and metric names is sent
+                  securely through a Supabase Edge Function to Gemini.
                   Uploaded files, account details, and report IDs are not
                   included.
                 </p>
@@ -513,8 +513,8 @@ function DashboardPage() {
               )}
 
               <p className="dashboard-trends-note">
-                Score history reflects simulated educational report results and should
-                not be interpreted as medical progress.
+                Score history reflects educational screening results and should not
+                be interpreted as medical progress.
               </p>
             </section>
 

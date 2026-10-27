@@ -140,6 +140,10 @@ interface ReportRow {
   observations: unknown;
   recommendations: unknown;
   notes: string | null;
+  engine: string | null;
+  side_file_name: string | null;
+  side_file_type: string | null;
+  side_file_size: number | null;
 }
 
 function rowToReport(row: ReportRow): MovementReport {
@@ -161,6 +165,10 @@ function rowToReport(row: ReportRow): MovementReport {
       ? row.recommendations
       : []) as string[],
     notes: row.notes ?? undefined,
+    engine: row.engine === 'pose' ? 'pose' : 'simulated',
+    sideFileName: row.side_file_name ?? undefined,
+    sideFileType: row.side_file_type ?? undefined,
+    sideFileSize: row.side_file_size ?? undefined,
   };
 }
 
@@ -182,6 +190,10 @@ function reportToRow(report: MovementReport, userId: string) {
     observations: report.observations,
     recommendations: report.recommendations,
     notes: report.notes ?? null,
+    engine: report.engine ?? 'simulated',
+    side_file_name: report.sideFileName ?? null,
+    side_file_type: report.sideFileType ?? null,
+    side_file_size: report.sideFileSize ?? null,
   };
 }
 

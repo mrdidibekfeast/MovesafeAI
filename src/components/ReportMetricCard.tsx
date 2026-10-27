@@ -6,9 +6,28 @@ interface ReportMetricCardProps {
   score: number;
   status: MetricStatus;
   description: string;
+  // Pose-measured metrics carry the measured quantity and a confidence;
+  // legacy simulated metrics do not.
+  value?: number;
+  unit?: string;
+  confidence?: 'high' | 'medium' | 'low';
 }
 
-function ReportMetricCard({ label, score, status, description }: ReportMetricCardProps) {
+const CONFIDENCE_LABELS = {
+  high: 'High confidence',
+  medium: 'Medium confidence',
+  low: 'Low confidence',
+} as const;
+
+function ReportMetricCard({
+  label,
+  score,
+  status,
+  description,
+  value,
+  unit,
+  confidence,
+}: ReportMetricCardProps) {
   // Keep the visual bar within 0–100% no matter what was stored.
   const clamped = Math.min(100, Math.max(0, score));
 
@@ -19,9 +38,22 @@ function ReportMetricCard({ label, score, status, description }: ReportMetricCar
         <span className="metric-score">{clamped}</span>
       </div>
 
-      <span className={`metric-status metric-status-${status}`}>
-        {METRIC_STATUS_LABELS[status]}
-      </span>
+      <div className="metric-chips">
+        <span className={`metric-status metric-status-${status}`}>
+          {METRIC_STATUS_LABELS[status]}
+        </span>
+        {value !== undefined && (
+          <span className="metric-measured">
+            Measured {value}
+            {unit ?? ''}
+          </span>
+        )}
+        {confidence && (
+          <span className={`metric-confidence metric-confidence-${confidence}`}>
+            {CONFIDENCE_LABELS[confidence]}
+          </span>
+        )}
+      </div>
 
       <div
         className="metric-progress"

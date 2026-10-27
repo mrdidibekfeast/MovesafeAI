@@ -21,9 +21,10 @@ function TermsPage() {
           <p>
             MoveSafe AI is a student demonstration project provided for
             learning purposes. It is offered as-is, without warranties of any
-            kind, and may change or become unavailable at any time. All
-            analysis results are simulated — see the{' '}
-            <Link to="/disclaimer">Disclaimer</Link> for details.
+            kind, and may change or become unavailable at any time. Analysis
+            results are automated educational screening, not a clinical
+            assessment — see the <Link to="/disclaimer">Disclaimer</Link> for
+            details.
           </p>
         </div>
 

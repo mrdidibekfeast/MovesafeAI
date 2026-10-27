@@ -50,7 +50,7 @@ function buildLatestFeedback(latest: MovementReport): DashboardFeedbackItem {
   if (score >= 85) {
     title = 'Strong result';
     tone = 'positive';
-    message = `Your latest ${movement} report received a score of ${score}. This simulated result shows strong performance across the analyzed movement metrics.`;
+    message = `Your latest ${movement} report received a score of ${score}. This result shows strong performance across the analyzed movement metrics.`;
   } else if (score >= 70) {
     title = 'Solid result';
     tone = 'neutral';

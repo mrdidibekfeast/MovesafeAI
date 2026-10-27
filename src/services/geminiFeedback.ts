@@ -41,7 +41,7 @@ const MAX_LIST_ITEM_LENGTH = 220;
 const MAX_DISCLAIMER_LENGTH = 400;
 
 const FALLBACK_DISCLAIMER =
-  'This AI-generated explanation is based on simulated educational report summaries. It is not medical advice, diagnosis, or proof of physical improvement.';
+  'This AI-generated explanation is based on educational screening report summaries. It is not medical advice, diagnosis, or proof of physical improvement.';
 
 export type GeminiFeedbackErrorCode =
   | 'unauthorized'
@@ -91,7 +91,7 @@ function summarizeMetrics(report: MovementReport): AiFeedbackMetricSummary[] {
 /*
  * Builds the limited summary sent through the Edge Function. Deliberately
  * excludes user identity, report IDs, file names, uploaded media,
- * observations, and anything else beyond simulated scores and metric names.
+ * observations, and anything else beyond scores and metric names.
  * The Edge Function re-validates all of this server-side.
  */
 export function buildAiFeedbackContext(

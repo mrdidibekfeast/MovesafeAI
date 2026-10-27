@@ -3,10 +3,13 @@ import type { DragEvent, FormEvent } from 'react';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { generateMovementAnalysis } from '../services/movementAnalysis';
+import { AnalysisError, generateMovementAnalysis } from '../services/movementAnalysis';
+import type { AnalysisErrorCode } from '../services/movementAnalysis';
+import { PoseDetectionError, extractPoseSequence, loadPoseLandmarker } from '../services/poseDetection';
 import { saveReport } from '../services/reportStorage';
 import { formatFileSize } from '../utils/format';
 import type { MovementType } from '../types/report';
+import type { CameraView } from '../types/pose';
 import '../styles/analyze.css';
 
 const MOVEMENT_OPTIONS: { value: MovementType; label: string }[] = [
@@ -23,17 +26,48 @@ const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MB
 const MAX_NOTES_LENGTH = 500;
 
-const PROCESSING_MESSAGES = [
-  'Reviewing file information…',
-  'Evaluating movement patterns…',
-  'Preparing educational feedback…',
-  'Creating your report…',
-];
+const VIEW_GUIDANCE: Record<CameraView, { title: string; hint: string; tips: string[] }> = {
+  front: {
+    title: 'Front view',
+    hint: 'Camera directly in front of you, facing you.',
+    tips: ['Whole body in frame, head to feet', 'Camera at roughly hip height', 'Face the camera squarely'],
+  },
+  side: {
+    title: 'Side view',
+    hint: 'Camera directly to one side, at 90° to the front view.',
+    tips: ['Whole body in frame, head to feet', 'Camera at roughly hip height', 'Same movement as the front video'],
+  },
+};
+
+type Stage = 'loading-model' | 'front' | 'side' | 'computing' | 'saving';
+
+const STAGE_TEXT: Record<Stage, string> = {
+  'loading-model': 'Loading the pose model (first use only)…',
+  front: 'Detecting joints in the front video…',
+  side: 'Detecting joints in the side video…',
+  computing: 'Measuring angles and building your report…',
+  saving: 'Saving your report…',
+};
+
+const ANALYSIS_MESSAGES: Record<AnalysisErrorCode, string> = {
+  'no-person-front': 'No person was detected in the front video. Make sure your whole body is visible and well lit, then try again.',
+  'no-person-side': 'No person was detected in the side video. Make sure your whole body is visible and well lit, then try again.',
+  'too-little-front': 'The person was only visible in a small part of the front video. Keep the whole body in frame for the full clip.',
+  'too-little-side': 'The person was only visible in a small part of the side video. Keep the whole body in frame for the full clip.',
+  'front-looks-like-side': 'The "front" video looks like it was filmed from the side. Please check the two videos are in the right slots.',
+  'side-looks-like-front': 'The "side" video looks like it was filmed from the front. Please check the two videos are in the right slots.',
+};
 
 interface FieldErrors {
   movement?: string;
   customName?: string;
-  file?: string;
+  front?: string;
+  side?: string;
+}
+
+interface VideoSlot {
+  file: File | null;
+  previewUrl: string | null;
 }
 
 // Returns an error message for an unusable file, or null when it is valid.
@@ -57,40 +91,40 @@ function AnalyzePage() {
   // Form state
   const [movementType, setMovementType] = useState<MovementType | ''>('');
   const [customMovementName, setCustomMovementName] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [videos, setVideos] = useState<Record<CameraView, VideoSlot>>({
+    front: { file: null, previewUrl: null },
+    side: { file: null, previewUrl: null },
+  });
   const [notes, setNotes] = useState('');
-  const [isDragging, setIsDragging] = useState(false);
+  const [dragging, setDragging] = useState<CameraView | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // Processing state
   const [phase, setPhase] = useState<'form' | 'processing' | 'complete'>('form');
-  const [processingIndex, setProcessingIndex] = useState(0);
+  const [stage, setStage] = useState<Stage>('loading-model');
+  const [progress, setProgress] = useState(0); // 0–100 across both videos
   const [generatedReportId, setGeneratedReportId] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const inputRefs = useRef<Record<CameraView, HTMLInputElement | null>>({ front: null, side: null });
   const completeHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const isProcessing = phase === 'processing';
 
-  // The preview URL exists only in temporary browser memory. Revoke the old
-  // URL whenever it changes and again when the page unmounts.
+  // Preview URLs exist only in temporary browser memory. Revoke them when
+  // they change and when the page unmounts — the video is never persisted.
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (videos.front.previewUrl) URL.revokeObjectURL(videos.front.previewUrl);
+      if (videos.side.previewUrl) URL.revokeObjectURL(videos.side.previewUrl);
     };
-  }, [previewUrl]);
+  }, [videos.front.previewUrl, videos.side.previewUrl]);
 
-  // Rotate the processing messages while the simulated analysis runs.
+  // Cancel any in-flight analysis if the user leaves the page.
   useEffect(() => {
-    if (!isProcessing) return;
-    setProcessingIndex(0);
-    const timer = setInterval(() => {
-      setProcessingIndex((index) => (index + 1) % PROCESSING_MESSAGES.length);
-    }, 700);
-    return () => clearInterval(timer);
-  }, [isProcessing]);
+    return () => abortRef.current?.abort();
+  }, []);
 
   // Move focus to the completion message so it is announced.
   useEffect(() => {
@@ -99,56 +133,60 @@ function AnalyzePage() {
     }
   }, [phase]);
 
-  const applyFile = (file: File | null) => {
-    if (isProcessing) return;
-    if (!file) return;
+  const setSlot = (view: CameraView, slot: VideoSlot) =>
+    setVideos((prev) => ({ ...prev, [view]: slot }));
 
+  const applyFile = (view: CameraView, file: File | null) => {
+    if (isProcessing || !file) return;
     const error = validateFile(file);
     if (error) {
-      setFieldErrors((prev) => ({ ...prev, file: error }));
-      setSelectedFile(null);
-      setPreviewUrl(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      setFieldErrors((prev) => ({ ...prev, [view]: error }));
+      setSlot(view, { file: null, previewUrl: null });
+      const input = inputRefs.current[view];
+      if (input) input.value = '';
       return;
     }
-
-    setFieldErrors((prev) => ({ ...prev, file: undefined }));
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+    setFieldErrors((prev) => ({ ...prev, [view]: undefined }));
+    setSlot(view, { file, previewUrl: URL.createObjectURL(file) });
   };
 
-  const removeFile = () => {
+  const removeFile = (view: CameraView) => {
     if (isProcessing) return;
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setFieldErrors((prev) => ({ ...prev, file: undefined }));
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    setSlot(view, { file: null, previewUrl: null });
+    setFieldErrors((prev) => ({ ...prev, [view]: undefined }));
+    const input = inputRefs.current[view];
+    if (input) input.value = '';
   };
 
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (view: CameraView) => (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (!isProcessing) setIsDragging(true);
+    if (!isProcessing) setDragging(view);
   };
 
-  const handleDragLeave = () => setIsDragging(false);
-
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (view: CameraView) => (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setIsDragging(false);
-    applyFile(event.dataTransfer.files?.[0] ?? null);
+    setDragging(null);
+    applyFile(view, event.dataTransfer.files?.[0] ?? null);
   };
 
   const resetForm = () => {
     setMovementType('');
     setCustomMovementName('');
-    setSelectedFile(null);
-    setPreviewUrl(null);
+    setVideos({ front: { file: null, previewUrl: null }, side: { file: null, previewUrl: null } });
     setNotes('');
     setFieldErrors({});
     setGeneratedReportId(null);
     setAnalysisError(null);
+    setProgress(0);
     setPhase('form');
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    for (const view of ['front', 'side'] as const) {
+      const input = inputRefs.current[view];
+      if (input) input.value = '';
+    }
+  };
+
+  const cancelAnalysis = () => {
+    abortRef.current?.abort();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -156,42 +194,63 @@ function AnalyzePage() {
     if (isProcessing) return;
 
     const nextErrors: FieldErrors = {};
-    if (!movementType) {
-      nextErrors.movement = 'Please choose a movement type.';
-    }
+    if (!movementType) nextErrors.movement = 'Please choose a movement type.';
     if (movementType === 'custom' && !customMovementName.trim()) {
       nextErrors.customName = 'Please enter the movement name.';
     }
-    if (!selectedFile) {
-      nextErrors.file = 'Please choose a video file to analyze.';
-    } else {
-      const fileError = validateFile(selectedFile);
-      if (fileError) nextErrors.file = fileError;
+    for (const view of ['front', 'side'] as const) {
+      const file = videos[view].file;
+      if (!file) {
+        nextErrors[view] = `Please add the ${view}-view video.`;
+      } else {
+        const fileError = validateFile(file);
+        if (fileError) nextErrors[view] = fileError;
+      }
     }
-
-    if (nextErrors.movement || nextErrors.customName || nextErrors.file) {
+    if (Object.values(nextErrors).some(Boolean)) {
       setFieldErrors(nextErrors);
       return;
     }
 
+    const frontFile = videos.front.file!;
+    const sideFile = videos.side.file!;
+
     setFieldErrors({});
     setAnalysisError(null);
+    setProgress(0);
+    setStage('loading-model');
     setPhase('processing');
 
-    try {
-      // Simulated processing delay — real movement analysis comes later.
-      await new Promise((resolve) => setTimeout(resolve, 2500));
+    const controller = new AbortController();
+    abortRef.current = controller;
 
+    try {
+      await loadPoseLandmarker();
+
+      // Each video contributes half of the progress bar.
+      setStage('front');
+      const frontSequence = await extractPoseSequence(frontFile, {
+        signal: controller.signal,
+        onProgress: (fraction) => setProgress(Math.round(fraction * 50)),
+      });
+
+      setStage('side');
+      const sideSequence = await extractPoseSequence(sideFile, {
+        signal: controller.signal,
+        onProgress: (fraction) => setProgress(50 + Math.round(fraction * 50)),
+      });
+
+      setStage('computing');
       const report = generateMovementAnalysis({
         movementType: movementType as MovementType,
         customMovementName: customMovementName.trim() || undefined,
-        fileName: selectedFile!.name,
-        fileType: selectedFile!.type,
-        fileSize: selectedFile!.size,
         notes: notes.trim() || undefined,
         userId: isAuthenticated && user ? user.id : null,
+        front: { fileName: frontFile.name, fileType: frontFile.type, fileSize: frontFile.size, sequence: frontSequence },
+        side: { fileName: sideFile.name, fileType: sideFile.type, fileSize: sideFile.size, sequence: sideSequence },
       });
 
+      setStage('saving');
       const result = await saveReport(report);
       if (!result.success) {
         setAnalysisError(
@@ -205,23 +264,113 @@ function AnalyzePage() {
 
       setGeneratedReportId(report.id);
       setPhase('complete');
-    } catch {
-      setAnalysisError('We could not complete the movement analysis. Please try again.');
+    } catch (error) {
+      if (error instanceof PoseDetectionError && error.code === 'aborted') {
+        setPhase('form'); // user cancelled — not an error
+        return;
+      }
+      if (error instanceof AnalysisError) {
+        setAnalysisError(ANALYSIS_MESSAGES[error.code]);
+      } else if (error instanceof PoseDetectionError && error.code === 'model-load-failed') {
+        setAnalysisError(
+          'The pose model could not be loaded. Check your connection and try again — it only needs to download once.',
+        );
+      } else if (error instanceof PoseDetectionError) {
+        setAnalysisError('One of the videos could not be read. Try re-exporting it as MP4 and uploading again.');
+      } else {
+        setAnalysisError('We could not complete the movement analysis. Please try again.');
+      }
       setPhase('form');
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null;
     }
   };
 
-  const formReady = Boolean(movementType) && Boolean(selectedFile) && !fieldErrors.file;
+  const formReady =
+    Boolean(movementType) &&
+    Boolean(videos.front.file) &&
+    Boolean(videos.side.file) &&
+    !fieldErrors.front &&
+    !fieldErrors.side;
+
+  const renderUploadSlot = (view: CameraView) => {
+    const guidance = VIEW_GUIDANCE[view];
+    const slot = videos[view];
+    const error = fieldErrors[view];
+    const inputId = `analyze-file-${view}`;
+    return (
+      <div className="upload-slot" key={view}>
+        <h3 className="upload-view-title">{guidance.title}</h3>
+        <p className="analyze-section-hint">{guidance.hint}</p>
+
+        {slot.file && slot.previewUrl ? (
+          <div className="file-preview">
+            <video src={slot.previewUrl} className="file-preview-video" controls />
+            <div>
+              <dl className="file-details">
+                <dt>File name</dt>
+                <dd>{slot.file.name}</dd>
+                <dt>Size</dt>
+                <dd>{formatFileSize(slot.file.size)}</dd>
+              </dl>
+              <button type="button" className="file-remove-button" onClick={() => removeFile(view)}>
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={['upload-zone', dragging === view ? 'upload-zone-dragging' : '', error ? 'upload-zone-error' : '']
+              .join(' ')
+              .trim()}
+            onDragOver={handleDragOver(view)}
+            onDragLeave={() => setDragging(null)}
+            onDrop={handleDrop(view)}
+          >
+            <span className="upload-zone-text">Drag and drop the {view} video here</span>
+            <span className="upload-zone-subtext">or choose a file</span>
+            <label className="form-label" htmlFor={inputId}>
+              Choose the {view}-view video
+            </label>
+            <input
+              id={inputId}
+              ref={(element) => {
+                inputRefs.current[view] = element;
+              }}
+              type="file"
+              className="upload-input"
+              accept={VIDEO_TYPES.join(',')}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? `${inputId}-error` : undefined}
+              onChange={(event) => applyFile(view, event.target.files?.[0] ?? null)}
+            />
+          </div>
+        )}
+
+        {error && (
+          <p id={`${inputId}-error`} className="analyze-field-error" role="alert">
+            {error}
+          </p>
+        )}
+
+        <ul className="upload-guidance">
+          {guidance.tips.map((tip) => (
+            <li key={tip}>{tip}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
 
   return (
     <section className="page-section analyze-page">
       <div className="layout-container">
         <header className="analyze-header">
-          <span className="analyze-sim-badge">Simulated Educational Analysis</span>
+          <span className="analyze-sim-badge">Automated Movement Screening</span>
           <h1>Analyze Your Movement</h1>
           <p>
-            Upload a clear, short video of a movement to receive an educational
-            movement-quality report.
+            Upload a short video from the front and one from the side. Pose detection runs
+            on your device, measures joint angles, and builds an educational report.
           </p>
         </header>
 
@@ -232,7 +381,7 @@ function AnalyzePage() {
           </li>
           <li className="analyze-step">
             <span className="analyze-step-number" aria-hidden="true">2</span>
-            Upload a file
+            Upload front + side videos
           </li>
           <li className="analyze-step">
             <span className="analyze-step-number" aria-hidden="true">3</span>
@@ -242,13 +391,14 @@ function AnalyzePage() {
 
         <p className="analyze-account-note">
           {isAuthenticated ? (
-            'Your completed report can be saved to your account.'
+            'Your completed report is saved to your account.'
           ) : (
             <>
-              You can complete one educational analysis as a guest.{' '}
-              <Link to="/login">Sign in</Link> to save and compare reports.
+              You can run an analysis as a guest.{' '}
+              <Link to="/login">Sign in</Link> to keep your reports across devices.
             </>
-          )}
+          )}{' '}
+          Your videos are processed in your browser and never uploaded.
         </p>
 
         {analysisError && (
@@ -261,13 +411,24 @@ function AnalyzePage() {
           <div className="analysis-processing" role="status" aria-live="polite">
             <span className="processing-spinner" aria-hidden="true" />
             <h2 className="processing-heading">Analyzing Your Movement</h2>
-            <p className="processing-message">{PROCESSING_MESSAGES[processingIndex]}</p>
+            <p className="processing-message">{STAGE_TEXT[stage]}</p>
+            <div
+              className="processing-progress"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+              aria-label="Analysis progress"
+            >
+              <div className="processing-progress-fill" style={{ width: `${progress}%` }} />
+            </div>
             <p className="processing-note">
-              Please keep this page open while your educational report is prepared.
+              Everything runs on this device. Please keep the page open — longer videos
+              take a little longer.
             </p>
-            <p className="processing-note">
-              This is a simulated educational analysis — not a medical evaluation.
-            </p>
+            <button type="button" className="analyze-again-button" onClick={cancelAnalysis}>
+              Cancel
+            </button>
           </div>
         )}
 
@@ -278,7 +439,7 @@ function AnalyzePage() {
               Your movement report is ready.
             </h2>
             <p className="processing-note">
-              Simulated educational analysis — not a medical assessment.
+              Automated educational screening — not a medical assessment.
             </p>
             <div className="complete-actions">
               <Link to={`/report/${generatedReportId}`} className="view-report-button">
@@ -296,7 +457,7 @@ function AnalyzePage() {
             {/* Movement selection */}
             <div className="analyze-section">
               <h2 className="analyze-section-title">1. Choose a movement</h2>
-              <p className="analyze-section-hint">Select the movement shown in your file.</p>
+              <p className="analyze-section-hint">Select the movement shown in your videos.</p>
 
               <fieldset className="analyze-fieldset">
                 <legend className="sr-only">Movement type</legend>
@@ -359,71 +520,14 @@ function AnalyzePage() {
               )}
             </div>
 
-            {/* File upload */}
+            {/* Two-view upload */}
             <div className="analyze-section">
-              <h2 className="analyze-section-title">2. Upload a video</h2>
+              <h2 className="analyze-section-title">2. Upload two videos of the same movement</h2>
               <p className="analyze-section-hint">
-                Supported: MP4, WebM, MOV (up to 50 MB). Video only — image files are
-                not supported.
+                MP4, WebM, or MOV, up to 50 MB each. The first 12 seconds of each clip are
+                analyzed. Both views are required — each one measures what the other can't.
               </p>
-
-              <div
-                className={[
-                  'upload-zone',
-                  isDragging ? 'upload-zone-dragging' : '',
-                  fieldErrors.file ? 'upload-zone-error' : '',
-                ].join(' ').trim()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <span className="upload-zone-text">Drag and drop a video here</span>
-                <span className="upload-zone-subtext">or choose a file</span>
-                <label className="form-label" htmlFor="analyze-file">
-                  Choose a video
-                </label>
-                <input
-                  id="analyze-file"
-                  ref={fileInputRef}
-                  type="file"
-                  className="upload-input"
-                  accept={VIDEO_TYPES.join(',')}
-                  onChange={(event) => applyFile(event.target.files?.[0] ?? null)}
-                />
-              </div>
-
-              {fieldErrors.file && (
-                <p className="analyze-field-error" role="alert">
-                  {fieldErrors.file}
-                </p>
-              )}
-
-              <ul className="upload-guidance">
-                <li>Capture the full body when possible.</li>
-                <li>Use a well-lit environment.</li>
-                <li>Keep the camera steady.</li>
-                <li>Avoid heavily edited media.</li>
-                <li>Use a short video focused on one movement.</li>
-              </ul>
-
-              {selectedFile && previewUrl && (
-                <div className="file-preview">
-                  <video src={previewUrl} className="file-preview-video" controls />
-                  <div>
-                    <dl className="file-details">
-                      <dt>File name</dt>
-                      <dd>{selectedFile.name}</dd>
-                      <dt>Type</dt>
-                      <dd>{selectedFile.type}</dd>
-                      <dt>Size</dt>
-                      <dd>{formatFileSize(selectedFile.size)}</dd>
-                    </dl>
-                    <button type="button" className="file-remove-button" onClick={removeFile}>
-                      Remove File
-                    </button>
-                  </div>
-                </div>
-              )}
+              <div className="upload-grid">{(['front', 'side'] as const).map(renderUploadSlot)}</div>
             </div>
 
             {/* Notes */}
@@ -450,7 +554,7 @@ function AnalyzePage() {
             </button>
 
             <p className="analyze-disclaimer">
-              MoveSafe AI provides educational movement feedback and does not replace
+              MoveSafe AI provides educational movement screening and does not replace
               evaluation by a qualified healthcare professional.
             </p>
           </form>

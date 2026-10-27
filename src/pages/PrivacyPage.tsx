@@ -30,16 +30,17 @@ function PrivacyPage() {
         <div className="legal-section">
           <h2>Movement Reports</h2>
           <p>
-            Movement reports are simulated for education and are stored only in
-            this browser&apos;s local storage — they are not uploaded to a
-            server in the current design. Deleting a report removes it from
-            this browser, and clearing your browser data removes all reports.
+            Movement reports are educational screening results. When you are
+            signed in, your reports (scores, metrics, and text only) are saved
+            to your account so you can return to them; as a guest they are
+            stored only in this browser&apos;s local storage. Deleting a report
+            removes it permanently.
           </p>
           <ul>
             <li>
-              Uploaded photos and videos are never stored or sent anywhere. The
-              app keeps only basic details such as the file name, type, and
-              size inside your local report.
+              Uploaded videos are never stored or sent anywhere. Pose detection
+              runs entirely inside your browser, and the app keeps only basic
+              details such as the file name, type, and size with your report.
             </li>
             <li>
               File previews shown during analysis exist only temporarily in
@@ -52,7 +53,7 @@ function PrivacyPage() {
           <h2>Optional AI Feedback</h2>
           <p>
             The Dashboard&apos;s AI explanation runs only when you request it.
-            A limited summary of simulated scores and metric names is sent
+            A limited summary of scores and metric names is sent
             through a Supabase Edge Function to Google&apos;s Gemini service.
             The summary never includes your name, email, account details,
             report IDs, uploaded files, or file names.

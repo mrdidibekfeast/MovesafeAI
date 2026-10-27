@@ -20,6 +20,11 @@ export interface MovementMetric {
   score: number;
   status: MetricStatus;
   description: string;
+  // Present on pose-measured metrics: the measured quantity, its unit, and
+  // how clearly the joints involved were seen. Absent on legacy reports.
+  value?: number;
+  unit?: string;
+  confidence?: 'high' | 'medium' | 'low';
 }
 
 // A full movement analysis report.
@@ -44,4 +49,11 @@ export interface MovementReport {
   // The user's own optional notes from the Analyze form (max 500 chars).
   // Shown in a dedicated report section and included in PDF/print output.
   notes?: string;
+  // Which engine produced the report. Reports created before pose detection
+  // existed carry no value and are treated as 'simulated'.
+  engine?: 'simulated' | 'pose';
+  // Side-view video metadata (pose engine only). Metadata only, never content.
+  sideFileName?: string;
+  sideFileType?: string;
+  sideFileSize?: number;
 }
