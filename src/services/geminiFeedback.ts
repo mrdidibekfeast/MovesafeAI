@@ -47,6 +47,7 @@ export type GeminiFeedbackErrorCode =
   | 'unauthorized'
   | 'invalid-request'
   | 'rate-limit'
+  | 'daily-cap'
   | 'timeout'
   | 'invalid-response'
   | 'service-unavailable'
@@ -200,6 +201,7 @@ const SERVER_ERROR_CODES: Record<string, GeminiFeedbackErrorCode> = {
   unauthorized: 'unauthorized',
   'invalid-request': 'invalid-request',
   'rate-limit': 'rate-limit',
+  'daily-cap': 'daily-cap',
   timeout: 'timeout',
   'invalid-response': 'invalid-response',
   'service-unavailable': 'service-unavailable',
@@ -300,6 +302,8 @@ export function geminiErrorMessage(error: unknown): string {
       return 'Your report summary could not be processed safely.';
     case 'rate-limit':
       return 'Feedback is temporarily busy. Please try again later.';
+    case 'daily-cap':
+      return "Today's feedback limit has been reached. Please try again tomorrow.";
     case 'timeout':
       return 'Feedback took too long to respond. Please try again.';
     case 'invalid-response':

@@ -11,6 +11,7 @@ import {
   validateAiFeedbackContext,
   type AiFeedbackContext,
   buildModelList,
+  parsePositiveInt,
   shouldTryNextModel,
 } from "./validation.ts";
 
@@ -97,6 +98,7 @@ type ErrorCode =
   | "invalid-request"
   | "method-not-allowed"
   | "rate-limit"
+  | "daily-cap"
   | "timeout"
   | "invalid-response"
   | "service-unavailable"
@@ -117,6 +119,12 @@ type ErrorCode =
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const RATE_LIMIT_MAX_TRACKED_USERS = 5000; // bounds memory on a busy isolate
+
+// Global daily cap across ALL users - the hard ceiling on the Gemini bill.
+// Enforced in Postgres (consume_ai_feedback_quota) so it holds across
+// isolates and restarts. Override with the AI_FEEDBACK_DAILY_CAP secret.
+// At current flash-lite pricing 300 generations is well under $3.
+const AI_FEEDBACK_DAILY_CAP = parsePositiveInt(Deno.env.get("AI_FEEDBACK_DAILY_CAP"), 300);
 
 const recentRequests = new Map<string, number[]>();
 
@@ -325,6 +333,27 @@ Deno.serve(async (request) => {
       429,
       "rate-limit",
       "You have requested feedback several times recently. Please try again in a few minutes.",
+    );
+  }
+
+  // Global daily ceiling across ALL users, claimed atomically in Postgres
+  // before any Gemini spend (see migration 20261027000000). This is the hard
+  // maximum on the bill. It fails CLOSED: if the quota check itself errors,
+  // no money is spent and the caller sees a temporary-unavailable message.
+  const { data: quotaGranted, error: quotaError } = await supabase.rpc(
+    "consume_ai_feedback_quota",
+    { p_limit: AI_FEEDBACK_DAILY_CAP },
+  );
+  if (quotaError) {
+    console.error("generate-ai-feedback: daily quota check failed");
+    return errorResponse(503, "service-unavailable", "The feedback service is temporarily unavailable.");
+  }
+  if (quotaGranted !== true) {
+    console.info("generate-ai-feedback: request rejected (global daily cap reached)");
+    return errorResponse(
+      429,
+      "daily-cap",
+      "Today's feedback limit has been reached. Please try again tomorrow.",
     );
   }
 

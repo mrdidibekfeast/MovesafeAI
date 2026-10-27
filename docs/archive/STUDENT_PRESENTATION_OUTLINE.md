@@ -1,3 +1,9 @@
+> **Archived (2026-10-27).** This document is from the student-submission phase of
+> MoveSafe AI, when the analysis was a simulated generator. It is kept for history
+> only and no longer describes the product: the app now runs real pose-based
+> analysis from front and side video. For current documentation see the root
+> [README](../../README.md) and [HANDOFF](../../HANDOFF.md).
+
 # MoveSafe AI — Student Presentation Outline
 
 Target length: **7–10 minutes** (roughly 30–45 seconds per slide).

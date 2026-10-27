@@ -1,231 +1,167 @@
 # MoveSafe AI — Technical Overview
 
-A deeper explanation of the implementation for mentors, evaluators, and
-developers. Written against the actual code — file names refer to real
-project files.
+Code-level description of how the app works. File names refer to real
+project files. For setup, deploy steps, and traps see [HANDOFF.md](HANDOFF.md).
 
-## Route Structure
+## Route structure
 
 All routes are declared in `src/App.tsx` inside a single `MainLayout`
-(header, skip link, `<main id="main-content">`, footer). A
-`RouteFocusManager` inside the router scrolls to top and moves focus to the
-main region on navigation.
+(header, skip link, `<main id="main-content">`, footer). `RouteFocusManager`
+scrolls to top and moves focus to the main region on navigation.
 
 | Route | Page | Access |
 |---|---|---|
-| `/` | HomePage | public |
+| `/` | HomePage (landing) | public; signed-in users are sent to `/dashboard` |
 | `/analyze` | AnalyzePage | public (guests can analyze) |
-| `/report/:reportId` | ReportDetailPage | public route, ownership-checked in-page |
+| `/report/:reportId` | ReportDetailPage | public route; ownership checked in-page; signed-out visitors see the overall score only |
 | `/learn` | LearnPage | public |
-| `/login`, `/signin` | LoginPage | public (redirects signed-in users) |
-| `/signup`, `/sign-up` | SignupPage | public (redirects signed-in users) |
-| `/forgot-password`, `/reset-password` | password pages | public |
-| `/dashboard`, `/reports`, `/compare` | protected group | `ProtectedRoute` |
+| `/login`, `/signin`, `/signup`, `/sign-up` | auth pages | public (redirect signed-in users) |
+| `/forgot-password`, `/reset-password` | password pages | public (`/reset-password` must stay unguarded) |
+| `/dashboard`, `/reports` | protected group | `ProtectedRoute` |
 | `/privacy`, `/terms`, `/disclaimer` | legal pages | public |
 | `*` | NotFoundPage | public |
 
-## Authentication Flow
+## Authentication
 
-`src/context/AuthContext.tsx` creates the Supabase session state:
-`getSession()` on mount plus an `onAuthStateChange` listener. It exposes
-`user`, `session`, `loading`, `isAuthenticated`, and the auth actions
-(`signIn`, `signUp`, `signOut`, `requestPasswordReset`, `updatePassword`).
-The context object lives in `auth-context.ts` (split for Fast Refresh);
-components consume it through `hooks/useAuth.ts`.
+`src/context/AuthContext.tsx` holds the Supabase session (`getSession()` on
+mount plus `onAuthStateChange`) and exposes `user`, `session`, `loading`,
+`isAuthenticated`, `signIn`, `signUp`, `signOut`, `requestPasswordReset`,
+`updatePassword`. The context object lives in `auth-context.ts` (split for
+Fast Refresh); components use `hooks/useAuth.ts`.
 
-Signup stores an optional `full_name` in user metadata. An empty
-`identities` array on signup is treated as "account may already exist"
-(anti-enumeration). Password reset uses `resetPasswordForEmail` with a
-`redirectTo` of `{origin}/reset-password`.
+`ProtectedRoute` renders a loading state until the session resolves, then an
+`<Outlet />` or `<Navigate to="/login" state={{ from }} />`. After login the
+user returns to `state.from` only if it is a safe internal path.
 
-## Protected Routes
-
-`src/components/ProtectedRoute.tsx` renders a loading state until the
-session resolves (no private-content flash), then either an `<Outlet />` or
-a `<Navigate to="/login" state={{ from: location }} />`. After login,
-`LoginPage` returns the user to `state.from` — but only if it is a safe
-internal path (must start with `/`, must not start with `//`, must not be
-an auth page); anything else falls back to `/dashboard`.
-
-## Report Model
+## Report model
 
 `src/types/report.ts` — `MovementReport`:
 
-- `id` (UUID), `userId` (string, or `null` for guest reports), `createdAt` (ISO)
-- `movementType` (`squat | jump | landing | running | walking | custom`)
-  plus `customMovementName?` for custom
-- `fileName`, `fileType`, `fileSize?` — metadata only, never file contents
-- `status` (`processing | completed | failed`), `overallScore` (0–100)
-- `summary`, `metrics[]` (`id`, `label`, `score`, `status`, `description`),
-  `observations[]`, `recommendations[]`
+- `id`, `userId` (`null` for guests), `createdAt`
+- `movementType` (`squat | jump | landing | running | walking | custom`),
+  `customMovementName?`
+- `fileName`, `fileType`, `fileSize?` and `sideFileName?`, `sideFileType?`,
+  `sideFileSize?` — metadata only, never file contents
+- `engine?: 'simulated' | 'pose'` — reports from before the real engine carry
+  no value and display as "Simulated Educational Analysis"
+- `status`, `overallScore` (0–100, always clamped), `summary`
+- `metrics[]` — `id`, `label`, `score`, `status` (`good ≥ 80`, `attention
+  65–79`, `warning < 65`), `description`, and for pose-measured metrics
+  `value`, `unit`, `confidence` (`high | medium | low`)
+- `observations[]`, `recommendations[]`, `notes?`
 
-## Simulated Analysis Service
+## The analysis engine
 
-`src/services/movementAnalysis.ts` generates reports deterministically: a
-mulberry32 PRNG seeded from `fileName|movement|timestamp` produces metric
-scores in the 55–95 range for movement-specific metric sets; the overall
-score is the rounded metric average. A keyword check on the user's notes
-(pain/hurt/injur/dizz/numb) adds a "consider seeking qualified guidance"
-recommendation. No computer vision, no MediaPipe, no landmark processing.
+Three services, each with one job.
 
-## localStorage Service
+### `services/poseDetection.ts`
 
-`src/services/reportStorage.ts` is the only file that touches
-localStorage. Storage key `movesafe_reports`, versioned format
-`{ version: 1, reports: [...] }` with two safety behaviors:
+Loads MediaPipe Pose Landmarker once per page (GPU delegate, CPU fallback).
+`extractPoseSequence(file)` decodes the video into a canvas, seeking at 10 fps
+for up to 12 s, runs `detectForVideo` on each frame, and returns every frame in
+which a person was found with 33 landmarks converted to source-pixel
+coordinates. Landmarks that fall outside the frame (feet cut off) have their
+visibility capped so downstream confidence drops. Timestamps are kept
+monotonic across files because the landmarker requires it. Nothing leaves the
+browser; the object URL is revoked afterwards.
 
-- **Legacy support:** a bare array (the pre-versioning format) still loads.
-- **Corruption tolerance:** entries failing a minimal structural check are
-  skipped individually; unreadable JSON or an unknown version yields an
-  empty list without deleting the stored data.
+### `services/biomechanics.ts`
 
-Writes return `false` on quota/privacy failures instead of throwing, and
-all scores are clamped 0–100 on the way in.
+Pure maths over landmarks — no DOM, no MediaPipe, unit-testable with
+synthetic points:
 
-## Report Ownership
+- `angleAtVertex`, `kneeFlexion`, `angleFromVertical`, `angleFromHorizontal`
+- `frontalShankAngle` — the valgus measure actually reported: tilt of the
+  knee→ankle segment from vertical, signed positive when the knee is nearer
+  the body's midline than the ankle. Chosen over the classic FPPA because the
+  thigh foreshortens to nothing in a deep squat seen from the front.
+- `framesWithVisibleSegment` — skips frames in which a segment projects
+  shorter than 60–80 % of its clip reference length (pointed at the camera).
+- `classifyView` — front vs side from shoulder width ÷ torso length, with a
+  confidence.
+- `estimateFrontYaw` — camera yaw from how much the trunk appears to lean
+  sideways relative to how much it foreshortens when pitched forward
+  (`tan λ = tan φ · sin θ`). Null when the clip has no forward pitch.
+- Gait: `groundLevelY`, `detectContacts`, `cadenceStepsPerMinute`,
+  `stanceFrames`. Landing: `detectLanding` (apex, first contact, extra flexion
+  in the following 0.6 s).
+- Scoring: `scoreLowerIsBetter`, `scoreHigherIsBetter`, `scoreInRange`,
+  `statusFromScore` map onto the app's fixed bands.
 
-Reports carry a `userId`; pages request data via `getReportsByUser(userId)`
-or check ownership before rendering a report detail (guest reports with
-`userId: null` are viewable only in that browser). This filtering reduces
-accidental cross-user display **in the browser only** — localStorage is
-client-side and is not a secure multi-user database. Production ownership
-must be enforced server-side (database + row-level security).
+### `services/movementAnalysis.ts`
 
-## Comparison Engine
+`generateMovementAnalysis({ movementType, front, side, notes, userId })`:
 
-`src/services/reportComparison.ts` compares an earlier/later pair (ordered
-by `createdAt`). Eligibility (in `utils/reportCompare.ts`): exactly two
-*completed* reports of the same movement; custom movements match on
-normalized names (trim/lowercase/collapse spaces). Metrics are matched by
-ID first, then by normalized label; unmatched metrics are listed
-separately. A difference within ±1 point counts as unchanged. The engine
-produces highlights (largest improvement/decline), stable metrics, and a
-plain-language educational interpretation.
+1. Rejects unusable footage (`no-person-*`, `too-little-*`) and confidently
+   mis-slotted videos (`front-looks-like-side`, `side-looks-like-front`).
+2. Estimates front-camera yaw. At ≥ 20° the sideways trunk and pelvic metrics
+   are omitted (camera angle would fake them); at 10–20° their confidence is
+   capped at medium.
+3. Builds the per-movement metric set (squat, jump/landing, running/walking,
+   custom), each metric a 95th-percentile value over usable frames, with a
+   confidence from landmark visibility. Knee valgus for bilateral movements
+   averages both shins, which cancels camera yaw to first order; left/right
+   asymmetry is therefore not reported.
+4. Scores, averages into the overall score, and writes observations (frame
+   counts, oblique-camera note, low-confidence and omitted-metric counts) and
+   recommendations (two priorities, a re-film prompt when warranted, a
+   discomfort note if the user's notes mention pain).
 
-## Dashboard Aggregation
+Every attempted-but-impossible measurement is counted and disclosed as
+"left out rather than estimated".
 
-`src/services/dashboardSummary.ts`:
+## Storage
 
-- **Summary:** totals, average score, most analyzed movement, latest date
-  (completed reports only).
-- **Time-range filter:** all / 30 days / 90 days / 6 calendar months, with
-  day-granular boundaries (`setHours(0,0,0,0)`); charts only — summary
-  cards always use all completed reports.
-- **Movement distribution:** normalized movement names → counts →
-  percentages, sorted by count then recency; categories beyond the top 5
-  group into "Other Movements".
-- **Score history:** completed reports sorted by date, capped at the 12
-  most recent points.
+`services/reportStorage.ts` is the only module that touches persistence.
 
-## SVG Chart Logic
+```
+Signed-in user  ->  Supabase `reports` table (RLS: owner-only select/insert/update/delete)
+Guest           ->  localStorage key `movesafe_reports` (versioned, corruption-tolerant)
+```
 
-Charts are hand-rolled (no library). `MovementDistributionChart` renders
-CSS horizontal bars with ARIA progressbar semantics.
-`ScoreHistoryChart` computes SVG coordinates in a responsive `viewBox`
-against a fixed 0–100 scale, renders keyboard-focusable points
-(selectable to show details), and includes an `sr-only` text summary. All
-charts pair color with text labels.
+All functions are async. On a signed-in user's first load, local reports of
+theirs are upserted to the database and the local copies removed only after
+the server confirms. `rowToReport` / `reportToRow` map the snake_case columns,
+including `engine` and the side-video metadata.
 
-## Local Feedback Algorithm
+Migrations: `20260905000000_create_reports.sql` (table, index, RLS policies
+with `with check` and `(select auth.uid())`),
+`20261026000000_add_engine_and_side_video.sql`,
+`20261027000000_ai_feedback_daily_cap.sql` (usage table + `SECURITY DEFINER`
+quota function, executable by `authenticated` only).
 
-`src/services/dashboardFeedback.ts` — fully deterministic:
+## Gemini feedback (Edge Function)
 
-- **Latest report category:** bands at 85 / 70 / 50.
-- **Recurring metrics:** labels normalized, a metric must appear in ≥2
-  completed reports to qualify; strongest and lowest-average recurring
-  metrics are selected with defined tie-breaks.
-- **Trend:** the last ≤5 completed reports split into earlier/later halves;
-  average difference ≥ +3 is increasing, ≤ −3 decreasing, otherwise stable.
-- **Recommendations:** rule-based, deduplicated, capped at 4; a stale-data
-  note appears when the newest report is older than 30 days.
+`supabase/functions/generate-ai-feedback/index.ts` (Deno) with pure helpers in
+`validation.ts`. Request path:
 
-This runs entirely in the browser and is the permanent default/fallback —
-Gemini never replaces it.
+1. CORS allow-list (`resolveCorsDecision`) — production origins built in,
+   extra ones via `ALLOWED_ORIGINS`; never `*`.
+2. `verify_jwt` at the gateway **and** `auth.getUser()` inside the function.
+3. Per-user throttle: 10 requests / 10 min, in-isolate, keyed on the verified
+   user id.
+4. Global daily cap: `supabase.rpc('consume_ai_feedback_quota', { p_limit })`
+   claims one unit atomically (`INSERT … ON CONFLICT DO UPDATE … WHERE count <
+   limit`); default 300/day via `AI_FEEDBACK_DAILY_CAP`; fails closed.
+5. Context validation and sanitisation (size, counts, string lengths; no
+   identity, file names, or raw report text).
+6. Model fallback: `GEMINI_MODEL` (if set) → `gemini-3.5-flash-lite` →
+   `gemini-3.5-flash` → `gemini-flash-lite-latest`; moves on after 503/429/404,
+   network errors, or an empty answer; stops on timeout or auth/config errors.
+7. Output validated for shape and unsafe language before it is returned.
 
-## Gemini Edge Function
+The client (`services/geminiFeedback.ts`) maps the function's error codes
+(`rate-limit`, `daily-cap`, `timeout`, …) to plain-language messages.
 
-`supabase/functions/generate-ai-feedback/` (Deno; `index.ts` handler +
-`validation.ts` pure helpers). Flow:
+## Frontend conventions
 
-1. Frontend (`src/services/geminiFeedback.ts`) builds a limited context:
-   ≤5 recent reports, ≤5 metrics each — no files, IDs, or account data.
-2. `supabase.functions.invoke('generate-ai-feedback')` sends it with the
-   session token (abort signal + 30s client timeout supported).
-3. The function requires a Bearer token and verifies it with
-   `supabase.auth.getUser(token)` — a decoded JWT alone is not trusted.
-4. Payload size is capped (50 KB, checked via header and after reading).
-5. Every field is validated and sanitized: scores must be finite 0–100,
-   the trend value must be on an allowlist, text is stripped of control
-   characters and markup with length caps, report/metric counts are
-   re-enforced server-side, and unknown fields are dropped.
-6. The prompt is constructed server-side; submitted names are embedded only
-   inside a JSON context block explicitly labeled as untrusted data that
-   must never be followed as instructions (prompt-injection precaution).
-7. Gemini is called with the `GEMINI_API_KEY` **Supabase secret** (default
-   model `gemini-flash-latest` — Google's rolling alias, since fixed model
-   names get retired for new keys — with a 20-second `AbortController`
-   timeout).
-8. The response is parsed defensively (code fences stripped, shape and
-   lengths enforced, fallback disclaimer guaranteed).
-9. Responses containing disallowed medical phrasing are rejected entirely.
-10. The frontend re-validates the returned feedback before it reaches
-    React state, and maps error codes to friendly messages (unauthorized,
-    invalid-request, rate-limit, timeout, invalid-response,
-    service-unavailable, configuration).
-
-Failures never remove the local feedback, cancelled requests are ignored
-even if a response arrives late, and stale AI feedback is cleared whenever
-the report data changes.
-
-## PDF and Print Flow
-
-**PDF** (`src/services/reportPdf.ts`, using `jspdf` + `html2canvas`): the
-report detail page passes its printable container ref to
-`exportReportToPdf(element, { fileName })`. The element temporarily gets a
-`pdf-exporting` class (white background, no shadows/animations), is
-captured by `html2canvas` at 2× scale, and the capture is sliced vertically
-onto A4 portrait pages with 12 mm margins, preserving aspect ratio.
-Elements marked `data-html2canvas-ignore` / `.pdf-exclude` (buttons,
-navigation, transient messages) never appear. `buildReportPdfFileName`
-produces `movesafe-{movement-slug}-report-YYYY-MM-DD.pdf` — never user
-IDs, emails, upload names, or report IDs. The class is removed in a
-`finally` block so the page never sticks in export mode.
-
-**Print:** the Print button calls `window.print()`. `@media print` rules
-plus an `@page` A4 rule with 14 mm margins hide `.print-exclude` elements
-(header, actions), control page breaks, and keep the disclaimer included.
-An effect sets a meaningful `document.title` (movement name, no IDs) so the
-browser's default print/PDF file name is useful, and restores it after.
-
-## Error Handling
-
-- `src/components/AppErrorBoundary.tsx` (class component) wraps the entire
-  tree in `main.tsx`; unexpected render errors show a safe fallback with
-  Reload/Go Home and no error details.
-- Expected failures stay in-page: loading/empty/error states on Dashboard,
-  Reports, Report Detail, Compare, and Analyze (shared `PageState` and
-  `LoadingState` components where a specialized state wasn't already
-  established).
-- Storage reads never throw; missing reports, invalid compare selections,
-  and unknown routes each have dedicated helpful states.
-
-## Accessibility Architecture
-
-- One `<main id="main-content" tabIndex={-1}>` in the layout; a skip link
-  is the first tab stop; `RouteFocusManager` moves focus there on route
-  changes; `useDocumentTitle` gives every page a distinct title.
-- Header nav uses `NavLink` (automatic `aria-current="page"`); the mobile
-  menu button has `aria-expanded`/`aria-controls`, closes on link click,
-  route change, and Escape (focus returns to the button).
-- Forms: visible labels, `aria-invalid`, `aria-describedby` to stable error
-  IDs, `role="alert"` for errors, and focus moved to the first invalid
-  field on submit.
-- Live feedback: `role="status"` + `aria-live="polite"` for loading and
-  success, `role="alert"` for errors; a hidden `#app-announcements` region
-  exists for global announcements.
-- Charts and score displays pair every color with text; `sr-only`
-  summaries describe chart content; a global `prefers-reduced-motion` rule
-  disables animation and transitions.
-- The delete flow uses an accessible `ConfirmDialog`
-  (`role="dialog"`, `aria-modal`, labeled title, focus trap + restore,
-  Escape to close).
+- Pages call services; services are pure or side-effect-isolated.
+- Scores clamp 0–100 via `utils/scoreUtils.ts`.
+- Accessibility: real controls, visible labels, `role="alert"` for errors,
+  `role="status"` + `aria-live` for progress, ARIA progressbars, focus-visible
+  rings, reduced-motion respected.
+- Design tokens in `styles/global.css`: neutral near-black canvas, Inter, one
+  vivid blue, hairline borders, 10 px-radius buttons; no gradient text, glows,
+  or emoji icons.
+- Outbound exercise links go through `utils/searchLinks.ts` (YouTube/Google
+  searches), by design, instead of single hand-picked videos.

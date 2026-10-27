@@ -6,10 +6,33 @@ frontend's handling of credentials and user data.
 
 This document records **what was actually tested**, what could not be
 verified without dashboard access, and what should be done before any
-production use. Nothing in the "proposed" sections has been applied.
+production use. Sections below marked *superseded* describe the July state;
+the box that follows is current.
 
-> MoveSafe AI is a student demonstration project. No formal security
+> MoveSafe AI is educational screening software. No formal security
 > certification or compliance status (HIPAA, SOC 2, etc.) is claimed.
+
+---
+
+## Current state — 2026-10-27
+
+Everything here was verified against the live project on that date.
+
+| Area | Status |
+|---|---|
+| Report storage | `public.reports` table exists (migration `20260905000000`). RLS enabled; four owner-only policies with `with check` on insert and update. Anonymous insert returns `42501`. Guests still use `localStorage` by design. |
+| Videos | Never stored or transmitted. Pose detection runs in the browser; only file metadata (front and side) is saved. No Storage buckets exist. |
+| Edge Function auth | `verify_jwt` on, plus `auth.getUser()` inside the function. Unauthenticated call → `401`. |
+| CORS | Explicit allow-list deployed (`movesafeai.app`, `www.`, localhost); unknown origin preflight → `403`. |
+| Per-user rate limit | 10 requests / 10 minutes per verified user (in-isolate, best effort). |
+| **Global spend cap** | `consume_ai_feedback_quota()` (migration `20261027000000`): atomic Postgres counter, default 300 generations/day across all users (`AI_FEEDBACK_DAILY_CAP`), fails closed. Anonymous call to the RPC → `42501`; the usage table is RLS-protected with no policies. |
+| Gemini models | Fallback list starting at `gemini-3.5-flash-lite`; the key sits only in Supabase secrets and the gitignored `supabase/functions/.env`. |
+| Sign-ups | Open. Email confirmation is currently **off** in the dashboard (the built-in mailer's rate limit blocked sign-ups); custom SMTP is the proper fix before a large rollout. |
+
+Residual risks worth knowing: the per-user throttle is per server isolate and
+per account, so it bounds nuisance rather than a determined attacker — the
+global cap is what bounds the bill; leaked-password protection and minimum
+password length still depend on dashboard settings (§2).
 
 ---
 
@@ -18,7 +41,7 @@ production use. Nothing in the "proposed" sections has been applied.
 Each item below was verified empirically against the live project, not
 inferred from source comments.
 
-### 1.1 Database tables — none exist
+### 1.1 Database tables — none existed at audit time *(superseded — see Current state)*
 
 Thirteen likely table names were probed through the PostgREST API using the
 publishable (anon) key: `profiles`, `users`, `reports`, `movement_reports`,
@@ -147,7 +170,7 @@ changed.**
 
 ## 3. Known risks in the current design
 
-### 3.1 Report data has no server-side security boundary (by design)
+### 3.1 Report data has no server-side security boundary *(superseded — signed-in reports now live under RLS; guest reports remain local by design)*
 
 All movement reports are stored in browser `localStorage`. Ownership is
 enforced by a client-side `userId` filter in
@@ -167,7 +190,7 @@ This is a documented, deliberate limitation of the student-project scope,
 not a regression. It is resolved by migrating to database storage with the
 policies proposed in §4.
 
-### 3.2 CORS was previously a wildcard — now an allow-list (not yet deployed)
+### 3.2 CORS was previously a wildcard — now an allow-list *(deployed since; verified `403` for unknown origins)*
 
 The deployed function currently answers preflight requests with
 `Access-Control-Allow-Origin: *`. The source has been changed to an
@@ -180,13 +203,13 @@ origin storage). It permits any page to call the function using *its own*
 authenticated account, which is an abuse/quota concern rather than a data
 breach.
 
-### 3.3 No rate limiting
+### 3.3 No rate limiting *(superseded — per-user throttle and global daily cap implemented)*
 
 See §1.6 and the proposal in §5.
 
 ---
 
-## 4. Proposed future RLS policies (not applied — no tables exist)
+## 4. RLS policies *(applied as migration `20260905000000_create_reports.sql`; text kept as the rationale)*
 
 **Do not run this SQL until the corresponding tables are actually being
 created.** It is recorded here so the migration starts from a secure
@@ -409,11 +432,11 @@ back.
 Before treating this application as production software:
 
 **Data**
-- [ ] Migrate reports from `localStorage` to Postgres tables
-- [ ] Enable RLS on **every** new table (§4)
+- [x] Migrate signed-in reports from `localStorage` to Postgres (guests stay local by design)
+- [x] Enable RLS on **every** new table (`reports`, `ai_feedback_usage`)
 - [ ] Verify ownership policies with two real accounts (§4.4)
-- [ ] Use a private Storage bucket with per-user folders and signed URLs
-- [ ] Confirm no table is exposed to the `anon` role unintentionally
+- [x] No Storage bucket is needed — videos are never uploaded
+- [x] Confirm no table is exposed to the `anon` role unintentionally (anon select on `reports` returns no rows; insert → `42501`)
 
 **Authentication**
 - [ ] Complete every dashboard check in §2
@@ -423,9 +446,11 @@ Before treating this application as production software:
 - [ ] Confirm no service-role key exists in any client-side code
 
 **Edge Function**
-- [ ] Deploy the CORS allow-list and set `ALLOWED_ORIGINS` (§6, §7)
-- [ ] Keep `verify_jwt = true`; never deploy with `--no-verify-jwt`
-- [ ] Implement per-user rate limiting (§5)
+- [x] Deploy the CORS allow-list (production origins are built in; `ALLOWED_ORIGINS` adds more)
+- [x] Keep `verify_jwt = true`; never deploy with `--no-verify-jwt`
+- [x] Implement per-user rate limiting (§5)
+- [x] Implement a global daily spend cap (`consume_ai_feedback_quota`)
+- [ ] Set a Google Cloud budget alert on the Gemini billing account
 - [ ] Confirm logs contain no keys, tokens, user IDs, emails, or full
       report contents
 

@@ -402,3 +402,10 @@ export function shouldTryNextModel(outcome: ModelOutcomeShape): boolean {
   }
   return outcome.text === null;
 }
+
+// Reads a positive integer from a secret, falling back when it is unset or
+// nonsense - a typo in a secret must never disable a limit.
+export function parsePositiveInt(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt((value ?? '').trim(), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}

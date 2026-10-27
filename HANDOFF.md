@@ -185,27 +185,40 @@ and failed states.
 - Per-user rate limit on AI feedback: 10 requests / 10 minutes, keyed on the
   verified user id, enforced **before** Gemini is called so abuse consumes
   no quota. It's in-isolate memory — best effort, not a hard global cap.
+- **Global daily cap** on AI feedback: `consume_ai_feedback_quota(p_limit)`
+  (migration `20261027000000`) is an atomic Postgres counter, default 300
+  generations/day across *all* users, overridable with the
+  `AI_FEEDBACK_DAILY_CAP` secret. This is the hard ceiling on the Gemini
+  bill. It fails closed — if the RPC errors, no money is spent. Only the
+  `authenticated` role may execute it; the table has RLS with no policies.
+- Gemini models: `gemini-3.5-flash-lite` first, then `gemini-3.5-flash`, then
+  `gemini-flash-lite-latest`; a 503/429/404 or empty answer moves to the next.
+  (The old default, `gemini-flash-latest`, was returning 503 "high demand" on
+  every try — that was the "could not connect" bug.)
+- Gemini billing: the key's Google Cloud project is on the paid tier (Tier 1,
+  pay as you go). One generation costs well under a cent; the daily cap keeps
+  the worst day under about $3. Paid-tier prompts are not used to train
+  Google models, which matters because report summaries are sent.
 - Gemini receives only a limited summary: at most 5 reports, 5 metrics each.
   No user ids, emails, file names, or video.
 
 ---
 
-## 5. 🔴 Broken right now
+## 5. 🟡 Known rough edges
 
-### Signups do not work
+### Sign-ups work, but email confirmation is off
 
-Supabase's built-in email sender returns **`email rate limit exceeded`**.
-"Confirm email" is ON, so new users need a confirmation email that isn't
-being sent — they cannot complete registration.
+Supabase's built-in email sender returned **`email rate limit exceeded`**,
+which blocked every new registration while "Confirm email" was on. Marcus
+turned confirmation **off** (2026-10-26) so sign-ups complete immediately.
 
-The built-in sender allows only a couple of messages per hour and **paying
-for Supabase Pro does not raise it**. The fix is custom SMTP:
+That is fine for a team rollout but means an address is never verified.
+Before opening the app widely, wire custom SMTP and turn confirmation back
+on:
 
 > Supabase dashboard → Authentication → Emails → SMTP Settings.
 > Resend's free tier (~3,000/month) takes about 10 minutes to wire up.
-
-**This is the highest-priority item.** Until it's fixed, nobody new can use
-the app.
+> **Paying for Supabase Pro does not raise the built-in sender's limit.**
 
 ### Unverified: the signed-in database save path
 
