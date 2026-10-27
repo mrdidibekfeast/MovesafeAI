@@ -151,9 +151,6 @@ function Header() {
               Reports
             </NavLink>
           )}
-          <NavLink to="/learn" className={withActive('header-link')} onClick={closeMenu}>
-            Learn
-          </NavLink>
           {isAuthenticated && (
             <NavLink to="/dashboard" className={withActive('header-link')} onClick={closeMenu}>
               Dashboard

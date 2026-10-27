@@ -5,6 +5,7 @@ import type { MovementReport } from '../types/report';
 import { useAuth } from '../hooks/useAuth';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { getReportById } from '../services/reportStorage';
+import { isMeasuredReport } from '../services/poseMath';
 import { buildReportPdfFileName, exportReportToPdf } from '../services/reportPdf';
 import ReportMetricCard from '../components/ReportMetricCard';
 import LoadingState from '../components/LoadingState';
@@ -183,7 +184,7 @@ function ReportDetailPage() {
       <section className="page-section report-page">
         <div className="layout-container report-container">
           <header className="report-header">
-            <span className="report-badge">Simulated Educational Analysis</span>
+            <span className="report-badge">{report && isMeasuredReport(report) ? 'Measured with pose tracking' : 'Simulated Educational Analysis'}</span>
             <h1 className="report-title">{movementLabel(report)} Movement Report</h1>
             <p className="report-meta">{formatReportDate(report.createdAt)}</p>
           </header>
@@ -244,7 +245,7 @@ function ReportDetailPage() {
           </div>
 
           <p className="report-disclaimer">
-            This report provides simulated educational movement feedback. It is not a
+            {report && isMeasuredReport(report) ? 'This report was measured from your video with 2D pose tracking, for education.' : 'This report provides simulated educational movement feedback.'} It is not a
             medical diagnosis, injury assessment, or substitute for evaluation by a
             qualified healthcare professional.
           </p>
@@ -293,7 +294,7 @@ function ReportDetailPage() {
 
         {/* Header */}
         <header className="report-header">
-          <span className="report-badge">Simulated Educational Analysis</span>
+          <span className="report-badge">{report && isMeasuredReport(report) ? 'Measured with pose tracking' : 'Simulated Educational Analysis'}</span>
           <h1 className="report-title">{movementLabel(report)} Movement Report</h1>
           <p className="report-meta">
             {formatReportDate(report.createdAt)} ·{' '}
@@ -431,7 +432,7 @@ function ReportDetailPage() {
 
         {/* Disclaimer — part of the printable PDF content */}
         <p className="report-disclaimer">
-          This report provides simulated educational movement feedback. It is not a
+          {report && isMeasuredReport(report) ? 'This report was measured from your video with 2D pose tracking, for education.' : 'This report provides simulated educational movement feedback.'} It is not a
           medical diagnosis, injury assessment, or substitute for evaluation by a
           qualified healthcare professional. Scores and recommendations are generated
           for demonstration and educational purposes.

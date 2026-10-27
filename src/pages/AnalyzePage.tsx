@@ -3,7 +3,6 @@ import type { DragEvent, FormEvent } from 'react';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { generateMovementAnalysis } from '../services/movementAnalysis';
 import { saveReport } from '../services/reportStorage';
 import { formatFileSize } from '../utils/format';
 import type { MovementType } from '../types/report';
@@ -24,10 +23,10 @@ const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MB
 const MAX_NOTES_LENGTH = 500;
 
 const PROCESSING_MESSAGES = [
-  'Reviewing file information…',
-  'Evaluating movement patterns…',
-  'Preparing educational feedback…',
-  'Creating your report…',
+  'Loading the tracking model…',
+  'Finding hips, knees and ankles…',
+  'Measuring every frame…',
+  'Building your report…',
 ];
 
 interface FieldErrors {
@@ -68,6 +67,9 @@ function AnalyzePage() {
   const [processingIndex, setProcessingIndex] = useState(0);
   const [generatedReportId, setGeneratedReportId] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [keyFrame, setKeyFrame] = useState<string | null>(null);
+  const [keyFrameNote, setKeyFrameNote] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const completeHeadingRef = useRef<HTMLHeadingElement | null>(null);
@@ -82,7 +84,7 @@ function AnalyzePage() {
     };
   }, [previewUrl]);
 
-  // Rotate the processing messages while the simulated analysis runs.
+  // Rotate the processing messages while the analysis runs.
   useEffect(() => {
     if (!isProcessing) return;
     setProcessingIndex(0);
@@ -147,6 +149,9 @@ function AnalyzePage() {
     setFieldErrors({});
     setGeneratedReportId(null);
     setAnalysisError(null);
+    setKeyFrame(null);
+    setKeyFrameNote(null);
+    setProgress(0);
     setPhase('form');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -179,18 +184,19 @@ function AnalyzePage() {
     setPhase('processing');
 
     try {
-      // Simulated processing delay — real movement analysis comes later.
-      await new Promise((resolve) => setTimeout(resolve, 2500));
-
-      const report = generateMovementAnalysis({
+      setProgress(0);
+      // Loaded on demand so the tracking model only ships to people who analyze.
+      const { analyzeMovementVideo } = await import('../services/poseAnalysis');
+      const { report, keyFrame: frame, view, framesUsed } = await analyzeMovementVideo({
+        file: selectedFile!,
         movementType: movementType as MovementType,
         customMovementName: customMovementName.trim() || undefined,
-        fileName: selectedFile!.name,
-        fileType: selectedFile!.type,
-        fileSize: selectedFile!.size,
         notes: notes.trim() || undefined,
         userId: isAuthenticated && user ? user.id : null,
+        onProgress: setProgress,
       });
+      setKeyFrame(frame);
+      setKeyFrameNote(`Filmed from the ${view}, ${framesUsed} frames tracked.`);
 
       const result = await saveReport(report);
       if (!result.success) {
@@ -205,8 +211,12 @@ function AnalyzePage() {
 
       setGeneratedReportId(report.id);
       setPhase('complete');
-    } catch {
-      setAnalysisError('We could not complete the movement analysis. Please try again.');
+    } catch (error) {
+      setAnalysisError(
+        error instanceof Error && error.name === 'PoseAnalysisError'
+          ? error.message
+          : 'We could not complete the movement analysis. Check your connection (the tracking model downloads the first time) and try again.',
+      );
       setPhase('form');
     }
   };
@@ -217,7 +227,7 @@ function AnalyzePage() {
     <section className="page-section analyze-page">
       <div className="layout-container">
         <header className="analyze-header">
-          <span className="analyze-sim-badge">Simulated Educational Analysis</span>
+          <span className="analyze-sim-badge">On-device pose tracking · Educational</span>
           <h1>Analyze Your Movement</h1>
           <p>
             Upload a clear, short video of a movement to receive an educational
@@ -266,7 +276,7 @@ function AnalyzePage() {
               Please keep this page open while your educational report is prepared.
             </p>
             <p className="processing-note">
-              This is a simulated educational analysis — not a medical evaluation.
+              {Math.round(progress * 100)}% of frames tracked. Your video stays on this device.
             </p>
           </div>
         )}
@@ -277,8 +287,14 @@ function AnalyzePage() {
             <h2 className="complete-heading" tabIndex={-1} ref={completeHeadingRef}>
               Your movement report is ready.
             </h2>
+            {keyFrame && (
+              <figure className="analysis-keyframe">
+                <img src={keyFrame} alt="The key moment from your video with the tracked skeleton. Red marks the joint the report focuses on." />
+                {keyFrameNote && <figcaption>{keyFrameNote} This image isn't saved anywhere.</figcaption>}
+              </figure>
+            )}
             <p className="processing-note">
-              Simulated educational analysis — not a medical assessment.
+              Measured from your video with pose tracking. Educational, not a medical assessment.
             </p>
             <div className="complete-actions">
               <Link to={`/report/${generatedReportId}`} className="view-report-button">
