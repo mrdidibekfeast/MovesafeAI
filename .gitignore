@@ -33,3 +33,7 @@ supabase/functions/.env
 *.njsproj
 *.sln
 *.sw?
+
+# Editor / IDE local state (machine-specific; causes conflicts between devs)
+.vs/
+.claude/settings.local.json
